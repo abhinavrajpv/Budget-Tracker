@@ -1030,6 +1030,31 @@
     DOM.importFileInput.addEventListener('change', importTasksJson);
     DOM.btnResetAll.addEventListener('click', wipeAllData);
 
+    // PWA Install Prompt Listener
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.classList.remove('hidden');
+    });
+
+    const pwaInstallAction = document.getElementById('pwa-install-action');
+    if (pwaInstallAction) {
+      pwaInstallAction.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            showToast('App installed successfully! 🎉', 'success');
+          }
+          deferredPrompt = null;
+          const banner = document.getElementById('pwa-install-banner');
+          if (banner) banner.classList.add('hidden');
+        }
+      });
+    }
+
     // Global Keyboard shortcuts
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {

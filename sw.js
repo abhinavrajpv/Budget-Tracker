@@ -3,14 +3,16 @@
  * Enables installing as a standalone Android app that works 100% offline.
  */
 
-const CACHE_NAME = 'zenith-tasks-v1';
+const CACHE_NAME = 'zenith-tasks-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './css/style.css',
   './js/app.js',
   './manifest.json',
-  './icon.svg'
+  './icon.svg',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // Install Event: cache core app assets
@@ -45,7 +47,6 @@ self.addEventListener('fetch', event => {
         return cachedResponse;
       }
       return fetch(event.request).catch(() => {
-        // Fallback to cached index if navigating offline
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }

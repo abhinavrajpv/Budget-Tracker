@@ -318,6 +318,40 @@ body {
   height: 18px;
 }
 
+/* PWA Install Banner */
+.pwa-banner {
+  background: var(--primary-gradient);
+  color: #ffffff;
+  padding: 0.75rem 1.15rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  box-shadow: 0 4px 15px var(--primary-glow);
+  animation: taskSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.btn-install-pwa {
+  background: #ffffff;
+  color: #4f46e5;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.825rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s;
+  white-space: nowrap;
+}
+
+.btn-install-pwa:hover {
+  transform: scale(1.05);
+}
+
 /* ==========================================================================
    Productivity Metric Banner / Progress Card
    ========================================================================== */
@@ -1803,6 +1837,18 @@ body {
       </div>
     </header>
 
+    <!-- PWA Install Banner -->
+    <div id="pwa-install-banner" class="pwa-banner hidden">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+          <line x1="12" y1="18" x2="12.01" y2="18"></line>
+        </svg>
+        <span>Install Zenith as an app on your phone!</span>
+      </div>
+      <button id="pwa-install-action" class="btn-install-pwa">Install</button>
+    </div>
+
     <!-- Productivity Metric / Progress Banner -->
     <section class="stats-card">
       <div class="stats-info">
@@ -3250,6 +3296,31 @@ body {
     DOM.importFileInput.addEventListener('change', importTasksJson);
     DOM.btnResetAll.addEventListener('click', wipeAllData);
 
+    // PWA Install Prompt Listener
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.classList.remove('hidden');
+    });
+
+    const pwaInstallAction = document.getElementById('pwa-install-action');
+    if (pwaInstallAction) {
+      pwaInstallAction.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            showToast('App installed successfully! 🎉', 'success');
+          }
+          deferredPrompt = null;
+          const banner = document.getElementById('pwa-install-banner');
+          if (banner) banner.classList.add('hidden');
+        }
+      });
+    }
+
     // Global Keyboard shortcuts
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
@@ -3286,5 +3357,14 @@ body {
 })();
 
 </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js').catch(function(err) {
+          console.log('ServiceWorker registration error:', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>
