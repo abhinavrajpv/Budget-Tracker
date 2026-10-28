@@ -469,12 +469,17 @@
             </div>
           </div>
 
-          <!-- Category Grid Picker -->
+          <!-- Category Input with Auto-Suggestions -->
           <div class="form-group">
-            <label class="form-label">Category</label>
-            <div class="category-picker-grid" id="modal-category-picker">
-              <!-- Rendered via JS -->
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label class="form-label" for="tx-category-input">Category</label>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Type new or pick existing</span>
             </div>
+            <input type="text" class="form-input" id="tx-category-input" list="category-datalist" placeholder="e.g. Food, Groceries, Salary, Shopping..." required autocomplete="off">
+            <datalist id="category-datalist"></datalist>
+
+            <!-- Quick suggestion pills for already created categories -->
+            <div id="modal-category-chips" class="filter-pills-row" style="margin-top: 8px; flex-wrap: wrap; gap: 6px; display: none;"></div>
           </div>
 
           <!-- Live Budget Warning Alert (Shows if expense will breach limit) -->
@@ -664,6 +669,14 @@
 
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
+
+  <!-- Ensure all legacy demo storage is wiped clean -->
+  <script>
+    if (localStorage.getItem('vb_clean_pure_v3') !== 'true') {
+      localStorage.clear();
+      localStorage.setItem('vb_clean_pure_v3', 'true');
+    }
+  </script>
 
   <!-- Main JavaScript File -->
   <script src="js/app.js"></script>

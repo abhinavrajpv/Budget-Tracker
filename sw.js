@@ -1,5 +1,5 @@
 // VaultBudget Service Worker — 100% Offline Resilience & Zero Data Transmission
-const CACHE_NAME = 'vaultbudget-cache-v1.0.1';
+const CACHE_NAME = 'vaultbudget-cache-v3.0.0';
 
 const ASSETS_TO_CACHE = [
   './',

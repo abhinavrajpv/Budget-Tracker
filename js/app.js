@@ -1,42 +1,64 @@
 /**
  * VaultBudget — 100% Private, Zero-Knowledge Budget Tracker
- * Fully Client-Side, Offline-First, PWA Enabled
+ * Completely User-Driven Categories & Limits.
+ * Fully Client-Side, 0% Server, Offline-First.
  */
 
 (function () {
   'use strict';
 
-  // ==========================================================================
-  // Default Configuration & Preset Categories (All Limits Null by Default)
-  // ==========================================================================
-  const STORAGE_KEY = 'vaultbudget_data_v2';
-  const PIN_KEY = 'vaultbudget_security_pin_v1';
+  // Force-purge any legacy hardcoded demo storage on user devices
+  const RESET_VERSION = 'vb_clean_pure_v3';
+  if (localStorage.getItem(RESET_VERSION) !== 'true') {
+    localStorage.clear();
+    localStorage.setItem(RESET_VERSION, 'true');
+  }
 
-  const DEFAULT_CATEGORIES = [
-    // Expense Categories (All limits start at null — user sets them)
-    { id: 'cat-food', name: 'Food & Dining', type: 'expense', icon: '🍔', color: '#f97316', limit: null },
-    { id: 'cat-groceries', name: 'Groceries', type: 'expense', icon: '🛒', color: '#10b981', limit: null },
-    { id: 'cat-housing', name: 'Housing & Rent', type: 'expense', icon: '🏠', color: '#6366f1', limit: null },
-    { id: 'cat-transport', name: 'Transport & Fuel', type: 'expense', icon: '🚗', color: '#06b6d4', limit: null },
-    { id: 'cat-shopping', name: 'Shopping & Clothes', type: 'expense', icon: '🛍️', color: '#ec4899', limit: null },
-    { id: 'cat-entertainment', name: 'Entertainment', type: 'expense', icon: '🎬', color: '#8b5cf6', limit: null },
-    { id: 'cat-utilities', name: 'Bills & Utilities', type: 'expense', icon: '💡', color: '#eab308', limit: null },
-    { id: 'cat-health', name: 'Healthcare & Meds', type: 'expense', icon: '💊', color: '#14b8a6', limit: null },
-    { id: 'cat-other-exp', name: 'Other Expenses', type: 'expense', icon: '📦', color: '#64748b', limit: null },
+  const STORAGE_KEY = 'vaultbudget_data_v3';
+  const PIN_KEY = 'vaultbudget_security_pin_v3';
 
-    // Income Categories
-    { id: 'cat-salary', name: 'Salary / Paycheck', type: 'income', icon: '💼', color: '#10b981', limit: null },
-    { id: 'cat-freelance', name: 'Freelance & Projects', type: 'income', icon: '💻', color: '#3b82f6', limit: null },
-    { id: 'cat-investments', name: 'Investments & Returns', type: 'income', icon: '📈', color: '#8b5cf6', limit: null },
-    { id: 'cat-allowance', name: 'Allowance & Gifts', type: 'income', icon: '🎁', color: '#f43f5e', limit: null },
-    { id: 'cat-other-inc', name: 'Other Income', type: 'income', icon: '💵', color: '#06b6d4', limit: null }
+  // Category Color Palette
+  const COLOR_PALETTE = [
+    '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#06b6d4',
+    '#8b5cf6', '#14b8a6', '#f43f5e', '#3b82f6', '#84cc16',
+    '#e11d48', '#d97706', '#0284c7', '#7c3aed', '#059669'
   ];
 
-  // Application State — 100% Clean: 0 Transactions, 0 Limits
+  // Helper to pick a smart emoji based on category name
+  function getIconForCategory(name) {
+    const n = (name || '').toLowerCase().trim();
+    if (n.includes('food') || n.includes('eat') || n.includes('dinner') || n.includes('lunch') || n.includes('snack') || n.includes('restaurant') || n.includes('cafe')) return '🍔';
+    if (n.includes('grocer') || n.includes('supermarket') || n.includes('market') || n.includes('vegetable') || n.includes('fruit')) return '🛒';
+    if (n.includes('rent') || n.includes('house') || n.includes('home') || n.includes('flat') || n.includes('room')) return '🏠';
+    if (n.includes('fuel') || n.includes('petrol') || n.includes('diesel') || n.includes('travel') || n.includes('car') || n.includes('bike') || n.includes('uber') || n.includes('auto')) return '🚗';
+    if (n.includes('shop') || n.includes('cloth') || n.includes('shoe') || n.includes('dress') || n.includes('mall')) return '🛍️';
+    if (n.includes('movie') || n.includes('film') || n.includes('game') || n.includes('entertainment') || n.includes('fun')) return '🎬';
+    if (n.includes('bill') || n.includes('electric') || n.includes('water') || n.includes('wifi') || n.includes('recharge') || n.includes('utility')) return '💡';
+    if (n.includes('health') || n.includes('med') || n.includes('doctor') || n.includes('hospital') || n.includes('pharmacy')) return '💊';
+    if (n.includes('salary') || n.includes('wage') || n.includes('job') || n.includes('paycheck') || n.includes('earning')) return '💼';
+    if (n.includes('freelance') || n.includes('project') || n.includes('client') || n.includes('consulting')) return '💻';
+    if (n.includes('invest') || n.includes('stock') || n.includes('crypto') || n.includes('share') || n.includes('mutual') || n.includes('dividend')) return '📈';
+    if (n.includes('gift') || n.includes('bonus') || n.includes('reward') || n.includes('cashback')) return '🎁';
+    if (n.includes('gym') || n.includes('fitness') || n.includes('sport') || n.includes('workout')) return '🏋️';
+    if (n.includes('fee') || n.includes('college') || n.includes('tuition') || n.includes('school') || n.includes('book')) return '📚';
+    return '🏷️';
+  }
+
+  function getColorForCategory(name) {
+    let hash = 0;
+    const str = (name || '').toLowerCase();
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % COLOR_PALETTE.length;
+    return COLOR_PALETTE[index];
+  }
+
+  // Application State — Completely Blank & User Driven
   let state = {
     currency: { symbol: '₹', code: 'INR' },
     transactions: [],
-    categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+    categories: [], // Starts 100% EMPTY! User creates categories on the fly
     currentFilter: 'all',
     searchTerm: '',
     currentView: 'dashboard'
@@ -52,11 +74,8 @@
     tempPinToConfirm: null
   };
 
-  // PWA deferred prompt
+  // PWA deferred install prompt
   let deferredInstallPrompt = null;
-
-  // Selected Category ID in Add Modal
-  let activeModalCategory = null;
   let activeModalType = 'expense';
 
   // ==========================================================================
@@ -64,19 +83,16 @@
   // ==========================================================================
   function loadState() {
     try {
-      // Purge any legacy sample data if present in localStorage
-      localStorage.removeItem('vaultbudget_data_v1');
-
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed.transactions)) state.transactions = parsed.transactions;
-        if (Array.isArray(parsed.categories) && parsed.categories.length) state.categories = parsed.categories;
+        if (Array.isArray(parsed.categories)) state.categories = parsed.categories;
         if (parsed.currency) state.currency = parsed.currency;
       } else {
-        // Completely clean start: 0 transactions, 0 limits
+        // Fresh start: 0 transactions, 0 categories, 0 limits
         state.transactions = [];
-        state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+        state.categories = [];
         saveState();
       }
 
@@ -85,7 +101,7 @@
       if (pinRaw) {
         security.hasPin = true;
         security.pinHash = pinRaw;
-        security.isUnlocked = false; // Lock immediately on fresh start
+        security.isUnlocked = false;
       }
     } catch (e) {
       console.error('Error loading storage state:', e);
@@ -156,6 +172,42 @@
   }
 
   // ==========================================================================
+  // Category Helpers (Dynamic Discovery & Resolution)
+  // ==========================================================================
+  function getCategory(catId) {
+    return state.categories.find((c) => c.id === catId);
+  }
+
+  function getCategoryByName(name, type = null) {
+    const n = (name || '').trim().toLowerCase();
+    if (!n) return null;
+    return state.categories.find((c) => {
+      const matchName = c.name.toLowerCase() === n;
+      return type ? matchName && c.type === type : matchName;
+    });
+  }
+
+  function getOrCreateCategory(name, type) {
+    const trimmed = (name || '').trim();
+    if (!trimmed) return null;
+
+    let cat = getCategoryByName(trimmed);
+    if (!cat) {
+      cat = {
+        id: 'cat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        name: trimmed,
+        type: type,
+        icon: getIconForCategory(trimmed),
+        color: getColorForCategory(trimmed),
+        limit: null // limits are completely optional
+      };
+      state.categories.push(cat);
+      saveState();
+    }
+    return cat;
+  }
+
+  // ==========================================================================
   // Financial Computations
   // ==========================================================================
   function calculateMetrics() {
@@ -200,7 +252,7 @@
   function renderMetrics() {
     const metrics = calculateMetrics();
 
-    // Currency tags
+    // Currency symbols
     const curSymbol = state.currency.symbol;
     document.getElementById('hero-currency-symbol').textContent = curSymbol;
     document.getElementById('tx-currency-label').textContent = curSymbol;
@@ -214,7 +266,6 @@
       maximumFractionDigits: 2
     });
 
-    netEl.textContent = formattedNet;
     if (netVal < 0) {
       netEl.className = 'net-balance-value negative';
       netEl.textContent = `-${formattedNet}`;
@@ -227,7 +278,7 @@
     document.getElementById('stat-total-income').textContent = `${curSymbol}${metrics.totalIncome.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
     document.getElementById('stat-total-expense').textContent = `${curSymbol}${metrics.totalExpense.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
 
-    // Update current month badge
+    // Month badges
     const now = new Date();
     const monthName = now.toLocaleString('default', { month: 'short', year: 'numeric' });
     const badge = document.getElementById('current-month-badge');
@@ -245,104 +296,116 @@
 
     const expenseCategories = state.categories.filter((c) => c.type === 'expense');
 
-    // Dashboard snapshot: show categories that have limits or high spending (up to 4)
     const dashboardContainer = document.getElementById('dashboard-budget-cards');
     const fullContainer = document.getElementById('full-budget-cards-grid');
 
-    const cardsHtml = expenseCategories.map((cat) => {
-      const spent = spentMap[cat.id] || 0;
-      const limit = Number(cat.limit) || 0;
-      const hasLimit = limit > 0;
-
-      let percent = hasLimit ? Math.round((spent / limit) * 100) : 0;
-      let statusClass = 'safe';
-      let statusLabel = `${percent}%`;
-
-      if (hasLimit) {
-        if (spent > limit) {
-          statusClass = 'danger';
-          statusLabel = `Over by ${formatMoney(spent - limit)}`;
-        } else if (percent >= 75) {
-          statusClass = 'warning';
-          statusLabel = `${percent}% Used`;
-        } else {
-          statusClass = 'safe';
-          statusLabel = `${percent}% Used`;
-        }
-      } else {
-        statusLabel = 'No limit';
-      }
-
-      const displayPercent = hasLimit ? Math.min(100, percent) : 0;
-      const remaining = hasLimit ? limit - spent : null;
-
-      return `
-        <div class="budget-card ${hasLimit && spent > limit ? 'over-limit' : ''} ${hasLimit && percent >= 75 && percent <= 100 ? 'near-limit' : ''}">
-          <div class="budget-card-top">
-            <div class="category-tag">
-              <span class="cat-emoji" style="border: 1px solid ${cat.color}30">${cat.icon}</span>
-              <span>${escapeHtml(cat.name)}</span>
-            </div>
-            <span class="budget-percent-badge ${statusClass}">
-              ${statusLabel}
-            </span>
-          </div>
-
-          <div class="progress-track" title="${hasLimit ? `${percent}% of limit spent` : 'No limit set'}">
-            <div class="progress-fill ${statusClass}" style="width: ${hasLimit ? displayPercent : 0}%;"></div>
-          </div>
-
-          <div class="budget-values-row">
-            <span>Spent: <strong>${formatMoney(spent)}</strong></span>
-            <span>Limit: <strong>${hasLimit ? formatMoney(limit) : 'Not set'}</strong></span>
-          </div>
-
-          <div class="budget-card-footer">
-            <span class="budget-remaining ${remaining !== null && remaining < 0 ? 'negative' : ''}">
-              ${hasLimit
-                ? (remaining >= 0 ? `${formatMoney(remaining)} left this month` : `Exceeded by ${formatMoney(Math.abs(remaining))}`)
-                : 'Tap to set monthly limit'}
-            </span>
-            <button type="button" class="btn-edit-limit" data-action="edit-limit" data-cat-id="${cat.id}">
-              ${hasLimit ? 'Edit Limit' : '+ Set Limit'}
+    // 1. Full Category Limits View
+    if (fullContainer) {
+      if (expenseCategories.length === 0) {
+        fullContainer.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"/></svg>
+            <h3>No Categories Yet</h3>
+            <p>Categories are automatically added when you record transactions, or you can create one now.</p>
+            <button type="button" class="btn-primary" id="btn-empty-add-cat" style="font-size:0.85rem; padding:8px 16px;">
+              + Create First Category
             </button>
           </div>
-        </div>
-      `;
-    }).join('');
+        `;
+        document.getElementById('btn-empty-add-cat')?.addEventListener('click', () => {
+          document.getElementById('modal-new-cat').classList.add('open');
+        });
+      } else {
+        fullContainer.innerHTML = expenseCategories.map((cat) => {
+          const spent = spentMap[cat.id] || 0;
+          const limit = Number(cat.limit) || 0;
+          const hasLimit = limit > 0;
 
-    if (fullContainer) {
-      fullContainer.innerHTML = cardsHtml;
+          let percent = hasLimit ? Math.round((spent / limit) * 100) : 0;
+          let statusClass = 'safe';
+          let statusLabel = `${percent}%`;
+
+          if (hasLimit) {
+            if (spent > limit) {
+              statusClass = 'danger';
+              statusLabel = `Over by ${formatMoney(spent - limit)}`;
+            } else if (percent >= 75) {
+              statusClass = 'warning';
+              statusLabel = `${percent}% Used`;
+            } else {
+              statusClass = 'safe';
+              statusLabel = `${percent}% Used`;
+            }
+          } else {
+            statusLabel = 'No limit set';
+          }
+
+          const displayPercent = hasLimit ? Math.min(100, percent) : 0;
+          const remaining = hasLimit ? limit - spent : null;
+
+          return `
+            <div class="budget-card ${hasLimit && spent > limit ? 'over-limit' : ''} ${hasLimit && percent >= 75 && percent <= 100 ? 'near-limit' : ''}">
+              <div class="budget-card-top">
+                <div class="category-tag">
+                  <span class="cat-emoji" style="border: 1px solid ${cat.color}30">${cat.icon}</span>
+                  <span>${escapeHtml(cat.name)}</span>
+                </div>
+                <span class="budget-percent-badge ${hasLimit ? statusClass : ''}">
+                  ${statusLabel}
+                </span>
+              </div>
+
+              <div class="progress-track" title="${hasLimit ? `${percent}% of limit spent` : 'Optional limit not set'}">
+                <div class="progress-fill ${statusClass}" style="width: ${hasLimit ? displayPercent : 0}%;"></div>
+              </div>
+
+              <div class="budget-values-row">
+                <span>Spent: <strong>${formatMoney(spent)}</strong></span>
+                <span>Limit: <strong>${hasLimit ? formatMoney(limit) : 'Optional (None)'}</strong></span>
+              </div>
+
+              <div class="budget-card-footer">
+                <span class="budget-remaining ${remaining !== null && remaining < 0 ? 'negative' : ''}">
+                  ${hasLimit
+                    ? (remaining >= 0 ? `${formatMoney(remaining)} left this month` : `Exceeded by ${formatMoney(Math.abs(remaining))}`)
+                    : 'Limits are optional'}
+                </span>
+                <div style="display:flex; gap:6px;">
+                  <button type="button" class="btn-edit-limit" data-action="edit-limit" data-cat-id="${cat.id}">
+                    ${hasLimit ? 'Edit Limit' : '+ Set Limit'}
+                  </button>
+                  <button type="button" class="btn-tx-del" data-action="delete-cat" data-cat-id="${cat.id}" title="Delete Category">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
     }
 
+    // 2. Dashboard Snapshot
     if (dashboardContainer) {
-      // Prioritize categories with limits first, then top spenders
-      const sortedForDashboard = [...expenseCategories].sort((a, b) => {
-        const spentA = spentMap[a.id] || 0;
-        const spentB = spentMap[b.id] || 0;
-        const limitA = a.limit || 0;
-        const limitB = b.limit || 0;
-        if (limitA > 0 && limitB === 0) return -1;
-        if (limitB > 0 && limitA === 0) return 1;
-        return spentB - spentA;
-      }).slice(0, 4);
-
-      if (sortedForDashboard.length === 0) {
+      if (expenseCategories.length === 0) {
         dashboardContainer.innerHTML = `
-          <div class="empty-state" style="grid-column: 1 / -1;">
-            <p>No expense categories defined.</p>
+          <div class="empty-state" style="grid-column: 1 / -1; padding: 24px 16px;">
+            <p style="color: var(--text-secondary); margin-bottom: 8px;">No categories yet. Tap <strong>Add Expense</strong> or <strong>Add Income</strong> to create your first category.</p>
           </div>
         `;
       } else {
-        const hasAnyLimit = expenseCategories.some((c) => Number(c.limit) > 0);
-        const starterNotice = !hasAnyLimit ? `
-          <div style="grid-column: 1 / -1; background: var(--surface-card); border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); padding: 12px 16px; font-size: 0.82rem; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px;">
-            <span>💡 All limits start at 0. Tap <strong>+ Set Limit</strong> on any category to set a budget.</span>
-            <button type="button" class="link-btn" id="btn-banner-goto-limits" style="white-space: nowrap;">Manage All &rarr;</button>
-          </div>
-        ` : '';
+        // Prioritize categories with limits first, then top spenders
+        const sorted = [...expenseCategories].sort((a, b) => {
+          const limitA = a.limit || 0;
+          const limitB = b.limit || 0;
+          if (limitA > 0 && limitB === 0) return -1;
+          if (limitB > 0 && limitA === 0) return 1;
+          const spentA = spentMap[a.id] || 0;
+          const spentB = spentMap[b.id] || 0;
+          return spentB - spentA;
+        }).slice(0, 4);
 
-        dashboardContainer.innerHTML = starterNotice + sortedForDashboard.map((cat) => {
+        dashboardContainer.innerHTML = sorted.map((cat) => {
           const spent = spentMap[cat.id] || 0;
           const limit = Number(cat.limit) || 0;
           const hasLimit = limit > 0;
@@ -358,8 +421,8 @@
                   <span class="cat-emoji">${cat.icon}</span>
                   <span>${escapeHtml(cat.name)}</span>
                 </div>
-                <span class="budget-percent-badge ${statusClass}">
-                  ${hasLimit ? (spent > limit ? 'Over Budget' : `${percent}%`) : 'Not set'}
+                <span class="budget-percent-badge ${hasLimit ? statusClass : ''}">
+                  ${hasLimit ? (spent > limit ? 'Over Budget' : `${percent}%`) : 'No limit'}
                 </span>
               </div>
               <div class="progress-track">
@@ -367,7 +430,7 @@
               </div>
               <div class="budget-values-row">
                 <span>Spent: <strong>${formatMoney(spent)}</strong></span>
-                <span>Limit: <strong>${hasLimit ? formatMoney(limit) : 'None'}</strong></span>
+                <span>Limit: <strong>${hasLimit ? formatMoney(limit) : 'Optional'}</strong></span>
               </div>
               <div class="budget-card-footer">
                 <span class="budget-remaining">
@@ -380,8 +443,6 @@
             </div>
           `;
         }).join('');
-
-        document.getElementById('btn-banner-goto-limits')?.addEventListener('click', () => switchView('budgets'));
       }
     }
   }
@@ -393,10 +454,8 @@
     const listEl = document.getElementById('full-transaction-list');
     const recentEl = document.getElementById('dashboard-recent-transactions');
 
-    // Filter transactions
     let filtered = [...state.transactions];
 
-    // Type or time filters
     if (state.currentFilter === 'expense') {
       filtered = filtered.filter((t) => t.type === 'expense');
     } else if (state.currentFilter === 'income') {
@@ -407,7 +466,6 @@
       filtered = filtered.filter(isTransactionInLastMonth);
     }
 
-    // Search query
     if (state.searchTerm) {
       const q = state.searchTerm.toLowerCase();
       filtered = filtered.filter((t) => {
@@ -418,7 +476,6 @@
       });
     }
 
-    // Sort descending by date & created timestamp
     filtered.sort((a, b) => {
       const dateA = new Date(a.date).getTime() || a.createdAt;
       const dateB = new Date(b.date).getTime() || b.createdAt;
@@ -463,14 +520,13 @@
       `;
     }
 
-    // Render full ledger
     if (listEl) {
       if (filtered.length === 0) {
         listEl.innerHTML = `
           <div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-            <h3>No Transactions Found</h3>
-            <p>Tap the + button to record your first income or expense.</p>
+            <h3>No Transactions Recorded</h3>
+            <p>Tap + Add Expense or + Add Income to add your first transaction.</p>
           </div>
         `;
       } else {
@@ -478,15 +534,14 @@
       }
     }
 
-    // Render recent on dashboard (first 5 transactions)
     if (recentEl) {
       const recent = [...state.transactions].sort((a, b) => (new Date(b.date).getTime() || b.createdAt) - (new Date(a.date).getTime() || a.createdAt)).slice(0, 5);
       if (recent.length === 0) {
         recentEl.innerHTML = `
           <div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            <h3>No Recent Activity</h3>
-            <p>Record your expenses and income to see your net balance automatically calculate.</p>
+            <h3>No Transactions Yet</h3>
+            <p>Record your expenses or income above to start tracking your net balance.</p>
           </div>
         `;
       } else {
@@ -521,7 +576,6 @@
 
     ctx.clearRect(0, 0, width, height);
 
-    // Filter expenses in current month
     const expenseTotals = {};
     let totalSpent = 0;
 
@@ -536,7 +590,6 @@
     const entries = Object.entries(expenseTotals).sort((a, b) => b[1] - a[1]);
 
     if (entries.length === 0 || totalSpent === 0) {
-      // Empty state donut placeholder
       const cx = width / 2;
       const cy = height / 2;
       const r = Math.min(cx, cy) - 25;
@@ -563,7 +616,6 @@
     const innerRadius = outerRadius - 26;
 
     let startAngle = -Math.PI / 2;
-
     const legendItemsHtml = [];
 
     entries.forEach(([catId, amount]) => {
@@ -579,7 +631,6 @@
       ctx.fillStyle = cat.color;
       ctx.fill();
 
-      // Thin separator
       ctx.strokeStyle = '#070b14';
       ctx.lineWidth = 2;
       ctx.stroke();
@@ -595,7 +646,6 @@
       startAngle = endAngle;
     });
 
-    // Center total text
     ctx.fillStyle = '#f8fafc';
     ctx.font = '800 16px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'center';
@@ -628,7 +678,6 @@
 
     ctx.clearRect(0, 0, width, height);
 
-    // Compute last 4 months
     const months = [];
     const now = new Date();
     for (let i = 3; i >= 0; i--) {
@@ -649,7 +698,7 @@
       }
     });
 
-    let maxVal = 1000;
+    let maxVal = 100;
     months.forEach((m) => {
       if (m.income > maxVal) maxVal = m.income;
       if (m.expense > maxVal) maxVal = m.expense;
@@ -659,11 +708,9 @@
     const paddingY = 30;
     const chartW = width - paddingX * 2;
     const chartH = height - paddingY * 2;
-
     const groupW = chartW / months.length;
     const barW = Math.min(22, groupW * 0.35);
 
-    // Draw baseline
     ctx.beginPath();
     ctx.moveTo(paddingX, height - paddingY);
     ctx.lineTo(width - paddingX, height - paddingY);
@@ -673,23 +720,19 @@
 
     months.forEach((m, idx) => {
       const groupCenterX = paddingX + idx * groupW + groupW / 2;
-
       const incH = (m.income / maxVal) * (chartH - 20);
       const expH = (m.expense / maxVal) * (chartH - 20);
 
-      // Income bar (green)
       const incX = groupCenterX - barW - 2;
       const incY = height - paddingY - incH;
       ctx.fillStyle = '#10b981';
       drawRoundedBar(ctx, incX, incY, barW, incH, 4);
 
-      // Expense bar (rose)
       const expX = groupCenterX + 2;
       const expY = height - paddingY - expH;
       ctx.fillStyle = '#f43f5e';
       drawRoundedBar(ctx, expX, expY, barW, expH, 4);
 
-      // Month Label
       ctx.fillStyle = '#94a3b8';
       ctx.font = '600 11px "Plus Jakarta Sans", sans-serif';
       ctx.textAlign = 'center';
@@ -698,7 +741,7 @@
   }
 
   function drawRoundedBar(ctx, x, y, width, height, radius) {
-    if (height < 2) height = 2; // minimum visual bar
+    if (height < 2) height = 2;
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
     ctx.lineTo(x + width - radius, y);
@@ -712,27 +755,36 @@
   }
 
   // ==========================================================================
-  // Modal: Category Picker in Add Modal & Live Budget Warning
+  // Modal: Category Suggestions & Live Budget Limit Check
   // ==========================================================================
-  function renderModalCategoryPicker() {
-    const picker = document.getElementById('modal-category-picker');
-    if (!picker) return;
+  function updateModalCategorySuggestions() {
+    const datalist = document.getElementById('category-datalist');
+    const chipsWrap = document.getElementById('modal-category-chips');
+    if (!datalist) return;
 
-    const availableCategories = state.categories.filter((c) => c.type === activeModalType);
+    // Filter categories matching current activeModalType (or show all user categories)
+    const matchingCats = state.categories.filter((c) => c.type === activeModalType);
 
-    if (!activeModalCategory || !availableCategories.find((c) => c.id === activeModalCategory)) {
-      activeModalCategory = availableCategories.length > 0 ? availableCategories[0].id : null;
+    // Update datalist options
+    datalist.innerHTML = matchingCats.map((c) => `<option value="${escapeHtml(c.name)}"></option>`).join('');
+
+    // Update quick chips
+    if (chipsWrap) {
+      if (matchingCats.length > 0) {
+        chipsWrap.style.display = 'flex';
+        chipsWrap.innerHTML = `
+          <span style="font-size:0.72rem; color:var(--text-muted); align-self:center; margin-right:4px;">Suggestions:</span>
+          ${matchingCats.map((c) => `
+            <button type="button" class="filter-pill" data-fill-cat="${escapeHtml(c.name)}" style="padding:4px 10px; font-size:0.75rem;">
+              ${c.icon} ${escapeHtml(c.name)}
+            </button>
+          `).join('')}
+        `;
+      } else {
+        chipsWrap.style.display = 'none';
+        chipsWrap.innerHTML = '';
+      }
     }
-
-    picker.innerHTML = availableCategories.map((cat) => {
-      const isSelected = cat.id === activeModalCategory;
-      return `
-        <div class="cat-chip ${isSelected ? 'selected' : ''}" data-cat-id="${cat.id}">
-          <span class="cat-chip-icon">${cat.icon}</span>
-          <span class="cat-chip-name">${escapeHtml(cat.name)}</span>
-        </div>
-      `;
-    }).join('');
 
     checkLiveBudgetLimit();
   }
@@ -742,12 +794,18 @@
     const warningText = document.getElementById('modal-budget-warning-text');
     if (!warningBox || !warningText) return;
 
-    if (activeModalType !== 'expense' || !activeModalCategory) {
+    if (activeModalType !== 'expense') {
       warningBox.className = 'modal-budget-warning';
       return;
     }
 
-    const cat = getCategory(activeModalCategory);
+    const catName = (document.getElementById('tx-category-input')?.value || '').trim();
+    if (!catName) {
+      warningBox.className = 'modal-budget-warning';
+      return;
+    }
+
+    const cat = getCategoryByName(catName, 'expense');
     if (!cat || !cat.limit || Number(cat.limit) <= 0) {
       warningBox.className = 'modal-budget-warning';
       return;
@@ -756,7 +814,6 @@
     const limit = Number(cat.limit);
     const amountVal = parseFloat(document.getElementById('tx-amount').value) || 0;
 
-    // Calculate current spending this month for this category
     const metrics = calculateMetrics();
     const currentSpent = metrics.categorySpendingThisMonth[cat.id] || 0;
     const projectedTotal = currentSpent + amountVal;
@@ -771,7 +828,7 @@
       const pct = Math.round((projectedTotal / limit) * 100);
       warningBox.className = 'modal-budget-warning approaching visible';
       warningText.innerHTML = `
-        <strong>Limit Alert:</strong> This expense will utilize <strong>${pct}%</strong> of your monthly ${escapeHtml(cat.name)} limit (${formatMoney(limit - projectedTotal)} left).
+        <strong>Limit Alert:</strong> This will utilize <strong>${pct}%</strong> of your monthly ${escapeHtml(cat.name)} limit (${formatMoney(limit - projectedTotal)} left).
       `;
     } else {
       warningBox.className = 'modal-budget-warning';
@@ -784,17 +841,14 @@
   function switchView(viewId) {
     state.currentView = viewId;
 
-    // Update desktop tabs
     document.querySelectorAll('.nav-tab-btn').forEach((btn) => {
       btn.classList.toggle('active', btn.getAttribute('data-target') === viewId);
     });
 
-    // Update bottom nav items
     document.querySelectorAll('.bottom-nav-item').forEach((btn) => {
       btn.classList.toggle('active', btn.getAttribute('data-target') === viewId);
     });
 
-    // Switch view panel
     document.querySelectorAll('.view-panel').forEach((panel) => {
       panel.classList.remove('active');
     });
@@ -804,7 +858,6 @@
       activePanel.classList.add('active');
     }
 
-    // Refresh contents
     renderMetrics();
     if (viewId === 'dashboard') {
       renderBudgets();
@@ -825,14 +878,14 @@
     activeModalType = type;
     document.getElementById('tx-id-input').value = '';
     document.getElementById('tx-amount').value = '';
+    document.getElementById('tx-category-input').value = '';
     document.getElementById('tx-description').value = '';
     document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
 
-    // Toggle segmented button state
     document.getElementById('type-btn-expense').className = `segmented-btn ${type === 'expense' ? 'active expense' : ''}`;
     document.getElementById('type-btn-income').className = `segmented-btn ${type === 'income' ? 'active income' : ''}`;
 
-    renderModalCategoryPicker();
+    updateModalCategorySuggestions();
 
     document.getElementById('modal-transaction').classList.add('open');
     setTimeout(() => {
@@ -861,12 +914,8 @@
   }
 
   // ==========================================================================
-  // Data Manipulation (Add, Edit, Delete, Limits)
+  // Data Manipulation (Add Transaction with Dynamic Category)
   // ==========================================================================
-  function getCategory(catId) {
-    return state.categories.find((c) => c.id === catId);
-  }
-
   function saveTransaction(e) {
     e.preventDefault();
     const amountVal = parseFloat(document.getElementById('tx-amount').value);
@@ -875,10 +924,15 @@
       return;
     }
 
-    if (!activeModalCategory) {
-      showToast('Please select a category', 'warning');
+    const catName = document.getElementById('tx-category-input').value.trim();
+    if (!catName) {
+      showToast('Please enter a category name', 'warning');
+      document.getElementById('tx-category-input').focus();
       return;
     }
+
+    // Dynamic Category Creation / Resolution
+    const cat = getOrCreateCategory(catName, activeModalType);
 
     const txDate = document.getElementById('tx-date').value || new Date().toISOString().split('T')[0];
     const desc = document.getElementById('tx-description').value.trim();
@@ -887,7 +941,7 @@
       id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
       type: activeModalType,
       amount: amountVal,
-      categoryId: activeModalCategory,
+      categoryId: cat.id,
       description: desc,
       date: txDate,
       createdAt: Date.now()
@@ -902,9 +956,7 @@
     renderTransactions();
     if (state.currentView === 'analytics') renderAnalyticsCharts();
 
-    const cat = getCategory(activeModalCategory);
-    const catName = cat ? cat.name : 'Transaction';
-    showToast(`${activeModalType === 'income' ? 'Income' : 'Expense'} saved: ${formatMoney(amountVal)} (${catName})`, 'success');
+    showToast(`${activeModalType === 'income' ? 'Income' : 'Expense'} recorded: ${formatMoney(amountVal)} (${cat.name})`, 'success');
     triggerHaptic();
   }
 
@@ -921,6 +973,30 @@
     }
   }
 
+  function deleteCategory(catId) {
+    const cat = getCategory(catId);
+    if (!cat) return;
+
+    const hasTx = state.transactions.some((t) => t.categoryId === catId);
+    const msg = hasTx
+      ? `Delete category "${cat.name}" and all its associated transactions?`
+      : `Delete category "${cat.name}"?`;
+
+    if (confirm(msg)) {
+      state.categories = state.categories.filter((c) => c.id !== catId);
+      if (hasTx) {
+        state.transactions = state.transactions.filter((t) => t.categoryId !== catId);
+      }
+      saveState();
+      renderMetrics();
+      renderBudgets();
+      renderTransactions();
+      if (state.currentView === 'analytics') renderAnalyticsCharts();
+      showToast(`Category "${cat.name}" removed`, 'success');
+      triggerHaptic();
+    }
+  }
+
   function saveCategoryLimit(e) {
     e.preventDefault();
     const catId = document.getElementById('limit-category-id').value;
@@ -932,7 +1008,7 @@
       saveState();
       renderBudgets();
       closeModal('modal-category-limit');
-      showToast(`Limit updated for ${cat.name}`, 'success');
+      showToast(limitVal > 0 ? `Limit set to ${formatMoney(limitVal)} for ${cat.name}` : `Limit removed for ${cat.name}`, 'success');
       triggerHaptic();
     }
   }
@@ -941,7 +1017,7 @@
     e.preventDefault();
     const name = document.getElementById('new-cat-name').value.trim();
     const type = document.getElementById('new-cat-type').value;
-    const emoji = document.getElementById('new-cat-emoji').value.trim() || '🏷️';
+    const emoji = document.getElementById('new-cat-emoji').value.trim() || getIconForCategory(name);
     const limit = parseFloat(document.getElementById('new-cat-limit').value) || null;
 
     if (!name) {
@@ -949,12 +1025,17 @@
       return;
     }
 
+    if (getCategoryByName(name, type)) {
+      showToast(`Category "${name}" already exists`, 'warning');
+      return;
+    }
+
     const newCat = {
-      id: 'cat_custom_' + Date.now(),
+      id: 'cat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
       name,
       type,
       icon: emoji,
-      color: type === 'income' ? '#10b981' : '#6366f1',
+      color: getColorForCategory(name),
       limit: limit > 0 ? limit : null
     };
 
@@ -968,7 +1049,7 @@
   }
 
   // ==========================================================================
-  // Security PIN Lock & PBKDF2 Web Crypto Vault
+  // Security PIN Lock
   // ==========================================================================
   async function hashPin(pin) {
     const encoder = new TextEncoder();
@@ -1012,7 +1093,6 @@
       security.inputBuffer = '';
 
       if (security.pinSettingMode) {
-        // Step 1 or 2 of setting PIN
         if (!security.tempPinToConfirm) {
           security.tempPinToConfirm = entered;
           document.getElementById('pin-screen-title').textContent = 'Confirm PIN';
@@ -1039,7 +1119,6 @@
           }
         }
       } else {
-        // Normal unlocking check
         const h = await hashPin(entered);
         if (h === security.pinHash) {
           security.isUnlocked = true;
@@ -1106,7 +1185,7 @@
   // ==========================================================================
   function exportBackupJSON() {
     const data = {
-      version: '1.0.0',
+      version: '3.0.0',
       exportedAt: new Date().toISOString(),
       currency: state.currency,
       categories: state.categories,
@@ -1166,7 +1245,7 @@
         if (parsed.transactions && Array.isArray(parsed.transactions)) {
           if (confirm(`Restore ${parsed.transactions.length} transactions from backup file?`)) {
             state.transactions = parsed.transactions;
-            if (parsed.categories && parsed.categories.length) state.categories = parsed.categories;
+            if (parsed.categories && Array.isArray(parsed.categories)) state.categories = parsed.categories;
             if (parsed.currency) state.currency = parsed.currency;
             saveState();
             renderMetrics();
@@ -1189,7 +1268,7 @@
       if (confirm('Final confirmation: Delete all stored transactions and categories on this phone?')) {
         localStorage.removeItem(STORAGE_KEY);
         state.transactions = [];
-        state.categories = [...DEFAULT_CATEGORIES];
+        state.categories = [];
         saveState();
         renderMetrics();
         renderBudgets();
@@ -1200,22 +1279,21 @@
   }
 
   // ==========================================================================
-  // PWA (Progressive Web App) Service Worker & Android Installation
+  // PWA Service Worker & Android Installation
   // ==========================================================================
   function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
           .then((reg) => {
-            console.log('VaultBudget ServiceWorker registered with scope:', reg.scope);
+            console.log('VaultBudget ServiceWorker ready:', reg.scope);
           })
           .catch((err) => {
-            console.warn('ServiceWorker registration error:', err);
+            console.warn('ServiceWorker notice:', err);
           });
       });
     }
 
-    // Android Chrome PWA install trigger
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredInstallPrompt = e;
@@ -1243,13 +1321,12 @@
         deferredInstallPrompt = null;
       });
     } else {
-      // Show instructional modal
       document.getElementById('modal-install-guide').classList.add('open');
     }
   }
 
   // ==========================================================================
-  // Toast System
+  // Toast Notifications
   // ==========================================================================
   function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
@@ -1292,7 +1369,7 @@
   // Event Listeners & Bootstrapping
   // ==========================================================================
   function setupEventListeners() {
-    // Navigation tabs (desktop & mobile)
+    // Navigation
     document.querySelectorAll('[data-target]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const target = btn.getAttribute('data-target');
@@ -1300,65 +1377,67 @@
       });
     });
 
-    // Quick Action Add Buttons
+    // Quick Add Buttons
     document.getElementById('btn-quick-add-expense')?.addEventListener('click', () => openAddModal('expense'));
     document.getElementById('btn-quick-add-income')?.addEventListener('click', () => openAddModal('income'));
     document.getElementById('btn-fab-add')?.addEventListener('click', () => openAddModal('expense'));
 
-    // Dashboard shortcuts to other views
+    // Dashboard navigation links
     document.getElementById('link-goto-budgets')?.addEventListener('click', () => switchView('budgets'));
     document.getElementById('link-goto-transactions')?.addEventListener('click', () => switchView('transactions'));
 
-    // Segmented control in Add Modal (Expense vs Income)
+    // Expense vs Income toggle in Modal
     document.getElementById('type-btn-expense')?.addEventListener('click', () => {
       activeModalType = 'expense';
       document.getElementById('type-btn-expense').className = 'segmented-btn active expense';
       document.getElementById('type-btn-income').className = 'segmented-btn income';
-      renderModalCategoryPicker();
+      updateModalCategorySuggestions();
     });
 
     document.getElementById('type-btn-income')?.addEventListener('click', () => {
       activeModalType = 'income';
       document.getElementById('type-btn-income').className = 'segmented-btn active income';
       document.getElementById('type-btn-expense').className = 'segmented-btn expense';
-      renderModalCategoryPicker();
+      updateModalCategorySuggestions();
     });
 
-    // Category click inside Add Modal
-    document.getElementById('modal-category-picker')?.addEventListener('click', (e) => {
-      const chip = e.target.closest('.cat-chip');
+    // Clicking a category suggestion chip fills into the category input
+    document.getElementById('modal-category-chips')?.addEventListener('click', (e) => {
+      const chip = e.target.closest('[data-fill-cat]');
       if (chip) {
-        activeModalCategory = chip.getAttribute('data-cat-id');
-        document.querySelectorAll('.cat-chip').forEach((c) => c.classList.remove('selected'));
-        chip.classList.add('selected');
-        checkLiveBudgetLimit();
-        triggerHaptic();
+        const val = chip.getAttribute('data-fill-cat');
+        const input = document.getElementById('tx-category-input');
+        if (input) {
+          input.value = val;
+          checkLiveBudgetLimit();
+          triggerHaptic();
+        }
       }
     });
 
-    // Live budget limit check on typing amount
+    // Live budget limit check
     document.getElementById('tx-amount')?.addEventListener('input', checkLiveBudgetLimit);
+    document.getElementById('tx-category-input')?.addEventListener('input', checkLiveBudgetLimit);
 
     // Form Submissions
     document.getElementById('tx-form')?.addEventListener('submit', saveTransaction);
     document.getElementById('limit-form')?.addEventListener('submit', saveCategoryLimit);
     document.getElementById('new-cat-form')?.addEventListener('submit', createCustomCategory);
 
-    // Modal Close Buttons
+    // Modal Close
     document.querySelectorAll('[data-close-modal]').forEach((btn) => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.modal-overlay').forEach((m) => m.classList.remove('open'));
       });
     });
 
-    // Close modal on click backdrop
     document.querySelectorAll('.modal-overlay').forEach((overlay) => {
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) overlay.classList.remove('open');
       });
     });
 
-    // Category Limit buttons in grids
+    // Dynamic buttons in lists (Edit limit, Delete tx, Delete category)
     document.addEventListener('click', (e) => {
       const editBtn = e.target.closest('[data-action="edit-limit"]');
       if (editBtn) {
@@ -1374,6 +1453,14 @@
         deleteTransaction(txId);
         return;
       }
+
+      const delCatBtn = e.target.closest('[data-action="delete-cat"]');
+      if (delCatBtn) {
+        e.stopPropagation();
+        const catId = delCatBtn.getAttribute('data-cat-id');
+        deleteCategory(catId);
+        return;
+      }
     });
 
     // Add Custom Category button
@@ -1382,15 +1469,15 @@
       triggerHaptic();
     });
 
-    // Search & Filter in Ledger
+    // Ledger Search & Filter
     document.getElementById('tx-search-input')?.addEventListener('input', (e) => {
       state.searchTerm = e.target.value.trim();
       renderTransactions();
     });
 
-    document.querySelectorAll('.filter-pill').forEach((pill) => {
+    document.querySelectorAll('.filter-pill[data-filter]').forEach((pill) => {
       pill.addEventListener('click', () => {
-        document.querySelectorAll('.filter-pill').forEach((p) => p.classList.remove('active'));
+        document.querySelectorAll('.filter-pill[data-filter]').forEach((p) => p.classList.remove('active'));
         pill.classList.add('active');
         state.currentFilter = pill.getAttribute('data-filter') || 'all';
         renderTransactions();
@@ -1420,7 +1507,6 @@
 
     document.getElementById('btn-quick-lock')?.addEventListener('click', lockAppNow);
 
-    // PIN Keypad buttons
     document.querySelectorAll('.keypad-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const key = btn.getAttribute('data-key');
@@ -1428,7 +1514,6 @@
       });
     });
 
-    // Keyboard support for PIN
     window.addEventListener('keydown', (e) => {
       if (document.getElementById('pin-lock-screen').classList.contains('active')) {
         if (/^[0-9]$/.test(e.key)) {
@@ -1464,7 +1549,7 @@
 
     document.getElementById('btn-wipe-data')?.addEventListener('click', wipeAllData);
 
-    // Auto-lock on tab switch / window blur if PIN active
+    // Auto-lock on tab switch / window blur
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && security.hasPin && security.isUnlocked) {
         lockAppNow();
@@ -1480,7 +1565,6 @@
     setupEventListeners();
     updateSecuritySettingsUI();
 
-    // Set select value for currency
     const currSelect = document.getElementById('currency-select');
     if (currSelect) {
       const match = `${state.currency.code}|${state.currency.symbol}`;
@@ -1492,7 +1576,6 @@
       }
     }
 
-    // Check if initial lock is required
     if (security.hasPin) {
       document.getElementById('pin-lock-screen').classList.add('active');
     }
@@ -1502,10 +1585,9 @@
     renderTransactions();
     registerServiceWorker();
 
-    console.log('VaultBudget initialized with 100% device-local storage.');
+    console.log('VaultBudget initialized: 100% User-Driven, 0 initial categories.');
   }
 
-  // Run once DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
