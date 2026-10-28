@@ -1,13 +1,13 @@
 {
-  "name": "Zenith Tasks",
-  "short_name": "Zenith",
-  "description": "Safe, private and fast to-do application",
-  "start_url": "./",
-  "scope": "./",
+  "name": "VaultBudget — 100% Private Budget & Expense Tracker",
+  "short_name": "VaultBudget",
+  "description": "Zero-knowledge private budget tracker. All transactions stay on your device with category limits and offline security.",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0a0e17",
-  "theme_color": "#0a0e17",
-  "orientation": "portrait",
+  "background_color": "#0b0f19",
+  "theme_color": "#0b0f19",
+  "orientation": "portrait-primary",
+  "lang": "en",
   "icons": [
     {
       "src": "icon-192.png",
@@ -24,7 +24,25 @@
     {
       "src": "icon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["finance", "productivity", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Add Expense",
+      "short_name": "Expense",
+      "description": "Quickly record a new expense",
+      "url": "./index.html?action=new-expense",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Add Income",
+      "short_name": "Income",
+      "description": "Quickly record new income",
+      "url": "./index.html?action=new-income",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

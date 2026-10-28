@@ -1,9 +1,6 @@
-/**
- * Zenith Tasks — Offline Service Worker
- * Enables installing as a standalone Android app that works 100% offline.
- */
+// VaultBudget Service Worker — 100% Offline Resilience & Zero Data Transmission
+const CACHE_NAME = 'vaultbudget-cache-v1.0.0';
 
-const CACHE_NAME = 'zenith-tasks-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -15,21 +12,23 @@ const ASSETS_TO_CACHE = [
   './icon-512.png'
 ];
 
-// Install Event: cache core app assets
-self.addEventListener('install', event => {
+// Install: Cache all static application shells
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS_TO_CACHE);
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
+        console.warn('Non-critical cache add warning:', err);
+      });
     }).then(() => self.skipWaiting())
   );
 });
 
-// Activate Event: clean up any older caches
-self.addEventListener('activate', event => {
+// Activate: Clean up previous caches
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys => {
+    caches.keys().then((keys) => {
       return Promise.all(
-        keys.map(key => {
+        keys.map((key) => {
           if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
@@ -39,18 +38,46 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch Event: Cache-first strategy for instant offline loading
-self.addEventListener('fetch', event => {
+// Fetch: Stale-While-Revalidate / Cache-First strategy
+self.addEventListener('fetch', (event) => {
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
+
+  const url = new URL(event.request.url);
+
+  // Ignore cross-origin external API requests if any
+  if (url.origin !== self.location.origin) {
+    // For external fonts or resources, try cache first, then network
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) return cachedResponse;
+        return fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+          }
+          return networkResponse;
+        }).catch(() => cachedResponse);
+      })
+    );
+    return;
+  }
+
+  // App internal assets
   event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
+    caches.match(event.request).then((cached) => {
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
         }
-      });
+        return networkResponse;
+      }).catch(() => cached);
+
+      // Return cached version immediately if available, else wait for network
+      return cached || fetchPromise;
     })
   );
 });

@@ -1,6 +1,6 @@
 /**
- * Zenith Tasks — Local Phone Server (Zero Signup)
- * Native Node.js HTTP server.
+ * VaultBudget — Local Phone Server
+ * Native Node.js HTTP server for fast local preview on phone & computer.
  */
 
 const http = require('http');
@@ -24,7 +24,6 @@ function getLocalIp() {
   const interfaces = os.networkInterfaces();
   for (const name of Object.keys(interfaces)) {
     for (const iface of interfaces[name]) {
-      // Pick active IPv4 that is not internal 127.0.0.1
       if (iface.family === 'IPv4' && !iface.internal) {
         return iface.address;
       }
@@ -69,21 +68,18 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.clear();
   console.log('================================================================');
-  console.log('           ⚡ ZENITH TO-DO APP — NO SIGNUP DEPLOYMENT           ');
+  console.log('         🛡️  VAULTBUDGET — 100% PRIVATE BUDGET TRACKER          ');
   console.log('================================================================\n');
-  console.log('  100% Free. No Signups. No Accounts. No Plans. No Hacking Risk.\n');
+  console.log('  100% Private. Zero Cloud. Zero Trackers. No Hacker Risk.\n');
   console.log('  ------------------------------------------------------------');
-  console.log(`  📱 OPEN THIS ON YOUR ANDROID PHONE:`);
+  console.log(`  📱 OPEN THIS ON YOUR ANDROID PHONE (same Wi-Fi):`);
   console.log(`     👉  http://${localIp}:${PORT}`);
   console.log('  ------------------------------------------------------------\n');
   console.log(`  💻 Open on this computer: http://localhost:${PORT}`);
-  console.log('\n  Tip: Connect phone to the same Wi-Fi (or your phone hotspot).');
-  console.log('  Leave this black window open while using the app.');
+  console.log('\n  Press Ctrl+C to stop the server anytime.');
   console.log('================================================================\n');
 
-  // Open the helper page in laptop browser
-  const helperUrl = `http://localhost:${PORT}/phone_connect.html`;
   if (process.platform === 'win32') {
-    exec(`start "" "${helperUrl}"`);
+    exec(`start "" "http://localhost:${PORT}"`);
   }
 });

@@ -1,25 +1,32 @@
 @echo off
-title Deploy to GitHub Pages (Free 24/7 Hosting)
+title VaultBudget — Deploy to GitHub
 cd /d "%~dp0"
 echo ========================================================
-echo       DEPLOY TO GITHUB PAGES (FREE FOREVER)
+echo        VAULTBUDGET — PUSH TO GITHUB (100%% SAFE)
 echo ========================================================
 echo.
-git init
+echo Checking Git status...
+git status
+echo.
+echo Staging files...
 git add .
-git commit -m "Deploy Zenith Tasks"
-git branch -M main
 echo.
-echo Please create a new empty repository on https://github.com/new
-set /p REPO_URL="Paste your GitHub repository link here: "
-git remote remove origin >nul 2>&1
-git remote add origin %REPO_URL%
-git push -u origin main
+echo Committing VaultBudget...
+git commit -m "Launch VaultBudget: 100% Private Offline Budget Tracker"
+echo.
+echo Pushing to GitHub...
+git push origin main
 echo.
 echo ========================================================
-echo Code pushed! Now:
-echo 1. Go to your repo Settings -^> Pages
-echo 2. Select 'main' branch and click Save
-echo 3. GitHub gives you a permanent 24/7 link for your phone!
+echo Pushed successfully to GitHub!
+echo.
+echo To enable your phone web link:
+echo 1. Go to your repo on GitHub
+echo 2. Go to Settings -> Pages
+echo 3. Under Branch, select 'main' and root '/ (root)'
+echo 4. Click Save
+echo.
+echo Open that link in Google Chrome on your Android phone,
+echo tap 3 dots (three dots) -> 'Install app' or 'Add to Home screen'!
 echo ========================================================
 pause

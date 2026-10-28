@@ -3,544 +3,669 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Zenith — Modern Task & To-Do Flow</title>
-  
-  <!-- Mobile & PWA meta tags -->
-  <meta name="theme-color" content="#0a0e17">
+  <title>VaultBudget — 100% Private Offline Budget Tracker</title>
+
+  <!-- PWA & Android Meta Tags -->
+  <meta name="theme-color" content="#070b14">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Zenith Tasks">
+  <meta name="apple-mobile-web-app-title" content="VaultBudget">
+  <meta name="description" content="100% Private, zero-knowledge offline budget & expense tracker. Data stays encrypted on your device.">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon-192.png">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- Ambient Background Orbs -->
-  <div class="ambient-glow glow-1"></div>
-  <div class="ambient-glow glow-2"></div>
-  <div class="ambient-glow glow-3"></div>
 
-  <!-- Main Canvas for Confetti -->
-  <canvas id="confetti-canvas"></canvas>
+  <!-- Ambient Animated Lighting -->
+  <div class="ambient-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
 
-  <div class="app-layout">
-    <!-- Top Header -->
-    <header class="app-header">
-      <div class="brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
+  <div class="app-wrapper">
+
+    <!-- Top App Navigation Bar -->
+    <header class="top-navbar">
+      <div class="brand-section">
+        <div class="brand-logo-wrap" title="VaultBudget Shield">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="rgba(16, 185, 129, 0.2)" stroke="#10b981"/>
+            <path d="M12 8v4"/>
+            <path d="M12 16h.01"/>
           </svg>
         </div>
-        <div class="brand-text">
-          <h1>Zenith<span>Tasks</span></h1>
-          <p class="greeting" id="greeting-text">Your personal task space</p>
+        <div class="brand-title-group">
+          <h1>Vault<span>Budget</span></h1>
+          <div class="privacy-badge" title="Data never leaves your phone">
+            <span class="pulse-dot"></span>
+            <span>100% Device Private</span>
+          </div>
         </div>
       </div>
 
-      <div class="header-actions">
-        <!-- Live Date badge -->
-        <div class="date-badge" id="current-date-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          <span id="date-display">Today</span>
-        </div>
-
-        <!-- Sound Feedback Toggle -->
-        <button class="icon-btn" id="sound-toggle-btn" title="Toggle Sound (Enabled)" aria-label="Toggle Sound">
-          <svg id="sound-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-          </svg>
-          <svg id="sound-icon-off" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-            <line x1="23" y1="9" x2="17" y2="15"></line>
-            <line x1="17" y1="9" x2="23" y2="15"></line>
-          </svg>
+      <!-- Desktop Navigation Tabs -->
+      <nav class="desktop-nav-tabs">
+        <button class="nav-tab-btn active" data-target="dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          Overview
         </button>
-
-        <!-- Theme Mode Switcher -->
-        <button class="icon-btn" id="theme-toggle-btn" title="Switch Theme (Dark / Light)" aria-label="Toggle Theme">
-          <svg id="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
-          <svg id="moon-icon" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
+        <button class="nav-tab-btn" data-target="transactions">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          Ledger
         </button>
-
-        <!-- Deploy & Info modal trigger -->
-        <button class="icon-btn" id="info-btn" title="Phone Setup & Deployment Guide" aria-label="Phone Setup Guide">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-            <line x1="12" y1="18" x2="12.01" y2="18"></line>
-          </svg>
+        <button class="nav-tab-btn" data-target="budgets">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Category Limits
         </button>
+        <button class="nav-tab-btn" data-target="analytics">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          Analytics
+        </button>
+        <button class="nav-tab-btn" data-target="security">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          Security & Vault
+        </button>
+      </nav>
 
-        <!-- Settings / Backup modal trigger -->
-        <button class="icon-btn" id="backup-btn" title="Backup / Restore Tasks" aria-label="Backup and Restore">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
+      <div class="nav-actions">
+        <button class="btn-icon-action btn-install-pwa" id="btn-pwa-install" style="display:none;" title="Download & Install App on Android">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Install App</span>
+        </button>
+        <button class="btn-icon-action" id="btn-quick-lock" style="display:none;" title="Lock Vault Now">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
         </button>
       </div>
     </header>
 
-    <!-- PWA Install Banner -->
-    <div id="pwa-install-banner" class="pwa-banner hidden">
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-          <line x1="12" y1="18" x2="12.01" y2="18"></line>
-        </svg>
-        <span>Install Zenith as an app on your phone!</span>
-      </div>
-      <button id="pwa-install-action" class="btn-install-pwa">Install</button>
-    </div>
+    <!-- ==========================================================================
+         VIEW 1: DASHBOARD / OVERVIEW
+         ========================================================================== -->
+    <main class="view-panel active" id="view-dashboard">
 
-    <!-- Productivity Metric / Progress Banner -->
-    <section class="stats-card">
-      <div class="stats-info">
-        <div class="stats-text">
-          <span class="stats-label">Daily Progress</span>
-          <h2 class="stats-title" id="stats-status-text">Your list is clean and ready!</h2>
-          <p class="stats-subtitle" id="stats-numbers"><span id="completed-count">0</span> of <span id="total-count">0</span> tasks completed</p>
+      <!-- Hero Net Balance Card -->
+      <section class="hero-balance-card">
+        <div class="balance-header">
+          <span class="balance-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v12M8 10h8M8 14h6"/></svg>
+            Net Amount Left
+          </span>
+          <span class="period-badge" id="current-month-badge">This Month</span>
         </div>
-        <div class="stats-chart">
-          <div class="circle-progress">
-            <svg viewBox="0 0 100 100">
-              <circle class="circle-bg" cx="50" cy="50" r="42"></circle>
-              <circle class="circle-bar" id="progress-circle-bar" cx="50" cy="50" r="42"></circle>
-            </svg>
-            <div class="circle-value" id="progress-percent">0%</div>
+
+        <div class="net-amount-display">
+          <span class="currency-symbol" id="hero-currency-symbol">₹</span>
+          <span class="net-balance-value positive" id="hero-net-balance">0.00</span>
+        </div>
+
+        <!-- Split Row: Total Income vs Total Expense -->
+        <div class="stats-split-row">
+          <div class="stat-pill">
+            <div class="stat-icon income">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-caption">Total Income</span>
+              <span class="stat-val income-val" id="stat-total-income">₹0.00</span>
+            </div>
           </div>
-        </div>
-      </div>
-      <!-- Mini Quick Counters -->
-      <div class="metrics-row">
-        <div class="metric-pill" data-tab-target="all">
-          <span class="metric-num" id="badge-all">0</span>
-          <span class="metric-desc">Total</span>
-        </div>
-        <div class="metric-pill" data-tab-target="active">
-          <span class="metric-num warning" id="badge-pending">0</span>
-          <span class="metric-desc">Active</span>
-        </div>
-        <div class="metric-pill" data-tab-target="completed">
-          <span class="metric-num success" id="badge-done">0</span>
-          <span class="metric-desc">Completed</span>
-        </div>
-        <div class="metric-pill" id="badge-high-priority">
-          <span class="metric-num danger" id="badge-urgent">0</span>
-          <span class="metric-desc">Urgent</span>
-        </div>
-      </div>
-    </section>
 
-    <!-- Task Creation Section -->
-    <section class="task-input-section">
-      <form id="new-task-form" class="task-card-input">
-        <div class="input-main-row">
-          <div class="checkbox-placeholder">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="9"></circle>
-            </svg>
-          </div>
-          <input 
-            type="text" 
-            id="task-title-input" 
-            placeholder="Add a new task (e.g. Study chapter 4, buy groceries...)" 
-            autocomplete="off"
-            required
-          />
-          <button type="button" class="btn-expand-details" id="toggle-details-btn" title="Optional: Add notes, priority, date, or category">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>Options</span>
-          </button>
-          <button type="submit" class="btn-primary" id="btn-submit-task">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>Add</span>
-          </button>
-        </div>
-
-        <!-- Expanded Details Drawer -->
-        <div class="details-drawer collapsed" id="task-details-drawer">
-          <div class="details-grid">
-            <!-- Optional Note -->
-            <div class="drawer-field full-width">
-              <textarea id="task-desc-input" placeholder="Add optional details, steps, or notes..." rows="2"></textarea>
+          <div class="stat-pill">
+            <div class="stat-icon expense">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </div>
-
-            <!-- Priority -->
-            <div class="drawer-field">
-              <label for="task-priority-select">Priority</label>
-              <div class="custom-select-wrap">
-                <select id="task-priority-select">
-                  <option value="low">🌱 Low</option>
-                  <option value="medium" selected>⚡ Medium</option>
-                  <option value="high">🔥 High</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Category -->
-            <div class="drawer-field">
-              <label for="task-category-select">Category</label>
-              <div class="custom-select-wrap">
-                <select id="task-category-select">
-                  <option value="College" selected>🎓 College & Study</option>
-                  <option value="Work">💼 Work</option>
-                  <option value="Personal">🌟 Personal</option>
-                  <option value="Health">💪 Health</option>
-                  <option value="Finance">💰 Finance</option>
-                  <option value="Other">📌 General</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Due Date -->
-            <div class="drawer-field">
-              <label for="task-due-date">Due Date (Optional)</label>
-              <input type="date" id="task-due-date">
-            </div>
-
-            <!-- Due Time -->
-            <div class="drawer-field">
-              <label for="task-due-time">Due Time (Optional)</label>
-              <input type="time" id="task-due-time">
+            <div class="stat-info">
+              <span class="stat-caption">Total Expenses</span>
+              <span class="stat-val expense-val" id="stat-total-expense">₹0.00</span>
             </div>
           </div>
         </div>
-      </form>
-    </section>
+      </section>
 
-    <!-- Toolbar: Search, Filters & Sort -->
-    <section class="controls-toolbar">
-      <!-- Search Input -->
-      <div class="search-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text" id="search-input" placeholder="Search tasks..." autocomplete="off">
-        <button class="clear-search-btn hidden" id="clear-search-btn" title="Clear Search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      <!-- Quick Action Buttons -->
+      <div class="quick-action-bar">
+        <button class="btn-add-action btn-add-expense" id="btn-quick-add-expense">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add Expense
+        </button>
+        <button class="btn-add-action btn-add-income" id="btn-quick-add-income">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+          Add Income
         </button>
       </div>
 
-      <!-- Filter Tabs: All, Active, Completed -->
-      <div class="filter-tabs" role="tablist">
-        <button class="filter-tab active" data-tab="all" role="tab">All Tasks</button>
-        <button class="filter-tab" data-tab="active" role="tab">Active</button>
-        <button class="filter-tab" data-tab="completed" role="tab">Completed</button>
-      </div>
-
-      <!-- Category Filter Pills -->
-      <div class="category-filter-wrap">
-        <label class="sr-only" for="category-filter-select">Filter by Category</label>
-        <select id="category-filter-select" class="dropdown-filter">
-          <option value="all">All Categories</option>
-          <option value="College">🎓 College</option>
-          <option value="Work">💼 Work</option>
-          <option value="Personal">🌟 Personal</option>
-          <option value="Health">💪 Health</option>
-          <option value="Finance">💰 Finance</option>
-          <option value="Other">📌 General</option>
-        </select>
-      </div>
-
-      <!-- Sort Options -->
-      <div class="sort-wrap">
-        <label class="sr-only" for="sort-select">Sort Tasks</label>
-        <select id="sort-select" class="dropdown-filter">
-          <option value="newest">🕒 Newest First</option>
-          <option value="oldest">⏳ Oldest First</option>
-          <option value="due-date">📅 Due Date</option>
-          <option value="priority-desc">🔥 Highest Priority</option>
-          <option value="priority-asc">🌱 Lowest Priority</option>
-          <option value="alpha">🔤 Alphabetical (A-Z)</option>
-        </select>
-      </div>
-    </section>
-
-    <!-- Tasks Main Display with Distinct Separate Sections -->
-    <main class="tasks-container">
-
-      <!-- SECTION 1: Active Tasks -->
-      <div class="tasks-group" id="active-tasks-group">
-        <div class="group-header">
-          <div class="group-title-wrap">
-            <span class="group-dot active-dot"></span>
-            <h3>Active Tasks</h3>
-            <span class="section-count-badge" id="active-tasks-count">0</span>
-          </div>
-        </div>
-        <div class="task-list" id="active-task-list" aria-live="polite">
-          <!-- Active tasks rendered dynamically -->
-        </div>
-      </div>
-
-      <!-- SECTION 2: Completed Tasks -->
-      <div class="tasks-group" id="completed-tasks-group">
-        <div class="group-header">
-          <div class="group-title-wrap">
-            <span class="group-dot completed-dot"></span>
-            <h3>Completed Tasks</h3>
-            <span class="section-count-badge" id="completed-tasks-count">0</span>
-          </div>
-          <button class="text-action-btn danger hidden" id="btn-clear-completed" title="Delete all completed tasks">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-            Clear Completed
+      <!-- Category Budget Limits Snapshot -->
+      <section class="dashboard-section">
+        <div class="section-header">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+            Category Budget Limits
+          </h2>
+          <button class="link-btn" id="link-goto-budgets">
+            Manage All Limits &rarr;
           </button>
         </div>
-        <div class="task-list" id="completed-task-list" aria-live="polite">
-          <!-- Completed tasks rendered dynamically -->
-        </div>
-      </div>
 
-      <!-- Empty State View (When no tasks exist in current view) -->
-      <div class="empty-state hidden" id="empty-state">
-        <div class="empty-illustration">
-          <div class="empty-icon-circle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-          </div>
+        <div class="budget-grid" id="dashboard-budget-cards">
+          <!-- Populated dynamically via JS -->
         </div>
-        <h3 id="empty-state-title">No tasks here</h3>
-        <p id="empty-state-desc">Your list is completely clear. Type your first task in the box above to get started!</p>
-        <button class="btn-primary-ghost" id="empty-add-btn">Add Your First Task</button>
-      </div>
+      </section>
 
+      <!-- Recent Transactions Snapshot -->
+      <section class="dashboard-section">
+        <div class="section-header">
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Recent Transactions
+          </h2>
+          <button class="link-btn" id="link-goto-transactions">
+            View All Ledger &rarr;
+          </button>
+        </div>
+
+        <div class="transaction-list" id="dashboard-recent-transactions">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="app-footer">
-      <div class="shortcuts-hint">
-        <span><kbd>Enter</kbd> to add</span>
-        <span><kbd>/</kbd> to search</span>
-        <span><kbd>Esc</kbd> to close</span>
-        <span>Safe &amp; 100% Private</span>
+    <!-- ==========================================================================
+         VIEW 2: TRANSACTIONS LEDGER
+         ========================================================================== -->
+    <main class="view-panel" id="view-transactions">
+      <div class="section-header">
+        <h2>Transactions History</h2>
+        <div style="display:flex; gap: 8px;">
+          <button class="btn-icon-action" id="btn-export-csv" title="Export to CSV">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export CSV
+          </button>
+        </div>
       </div>
-      <div class="footer-credit">
-        Ready for Android &amp; Mobile Web
-      </div>
-    </footer>
-  </div>
 
-  <!-- Edit Task Modal -->
-  <div class="modal-overlay hidden" id="edit-modal-overlay">
-    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <div class="modal-header">
-        <h3 id="modal-title">Edit Task</h3>
-        <button class="modal-close-btn" id="modal-close-btn" aria-label="Close dialog">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      <!-- Search & Filter Options -->
+      <div class="transactions-filter-bar">
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" class="search-input" id="tx-search-input" placeholder="Search by note, description or category...">
+        </div>
+
+        <div class="filter-pills-row">
+          <button class="filter-pill active" data-filter="all">All</button>
+          <button class="filter-pill" data-filter="expense">Expenses Only</button>
+          <button class="filter-pill" data-filter="income">Income Only</button>
+          <button class="filter-pill" data-filter="this-month">This Month</button>
+          <button class="filter-pill" data-filter="last-month">Last Month</button>
+        </div>
+      </div>
+
+      <!-- Transactions List -->
+      <div class="transaction-list" id="full-transaction-list">
+        <!-- Rendered via JS -->
+      </div>
+    </main>
+
+    <!-- ==========================================================================
+         VIEW 3: CATEGORY BUDGETS & LIMITS
+         ========================================================================== -->
+    <main class="view-panel" id="view-budgets">
+      <div class="section-header">
+        <div>
+          <h2>Category Spending Limits</h2>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">
+            Set maximum expenditure caps for each category. Get alerted before you overspend.
+          </p>
+        </div>
+        <button class="btn-primary" id="btn-add-custom-cat" style="font-size: 0.82rem; padding: 8px 14px;">
+          + New Category
         </button>
       </div>
-      <form id="edit-task-form" class="modal-body">
-        <input type="hidden" id="edit-task-id">
 
-        <div class="form-group">
-          <label for="edit-title">Task Title</label>
-          <input type="text" id="edit-title" required autocomplete="off">
-        </div>
+      <div class="budget-grid" id="full-budget-cards-grid" style="margin-top: 16px;">
+        <!-- Populated via JS -->
+      </div>
+    </main>
 
-        <div class="form-group">
-          <label for="edit-desc">Description / Notes</label>
-          <textarea id="edit-desc" rows="3" placeholder="Additional details or steps..."></textarea>
-        </div>
+    <!-- ==========================================================================
+         VIEW 4: ANALYTICS & CHARTS
+         ========================================================================== -->
+    <main class="view-panel" id="view-analytics">
+      <div class="section-header">
+        <h2>Visual Spending Breakdown</h2>
+        <span class="period-badge" id="analytics-month-label">This Month</span>
+      </div>
 
-        <div class="form-row-2">
-          <div class="form-group">
-            <label for="edit-priority">Priority</label>
-            <select id="edit-priority">
-              <option value="low">🌱 Low</option>
-              <option value="medium">⚡ Medium</option>
-              <option value="high">🔥 High</option>
-            </select>
+      <div class="analytics-grid">
+        <!-- Category Donut Chart Card -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Expenses by Category</h3>
           </div>
-
-          <div class="form-group">
-            <label for="edit-category">Category</label>
-            <select id="edit-category">
-              <option value="College">🎓 College & Study</option>
-              <option value="Work">💼 Work</option>
-              <option value="Personal">🌟 Personal</option>
-              <option value="Health">💪 Health</option>
-              <option value="Finance">💰 Finance</option>
-              <option value="Other">📌 General</option>
-            </select>
+          <div class="canvas-wrap">
+            <canvas id="category-donut-chart"></canvas>
+          </div>
+          <div class="chart-legend" id="donut-legend-wrap">
+            <!-- Populated via JS -->
           </div>
         </div>
 
-        <div class="form-row-2">
-          <div class="form-group">
-            <label for="edit-due-date">Due Date</label>
-            <input type="date" id="edit-due-date">
+        <!-- Monthly Inflow vs Outflow Bar Chart Card -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Income vs Expenses (Monthly)</h3>
           </div>
-          <div class="form-group">
-            <label for="edit-due-time">Due Time</label>
-            <input type="time" id="edit-due-time">
+          <div class="canvas-wrap">
+            <canvas id="monthly-bar-chart"></canvas>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item">
+              <span class="legend-color-dot" style="background:#10b981;"></span>
+              <span>Income</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color-dot" style="background:#f43f5e;"></span>
+              <span>Expenses</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ==========================================================================
+         VIEW 5: SECURITY & VAULT SETTINGS
+         ========================================================================== -->
+    <main class="view-panel" id="view-security">
+      <!-- 100% Unhackable Security Status Banner -->
+      <section class="security-status-card">
+        <div class="sec-header">
+          <div class="sec-shield-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
+          <div>
+            <h2>100% Secure &amp; Private</h2>
+            <p style="font-size:0.8rem; color:#a7f3d0;">Zero-Knowledge Client-Side Architecture</p>
           </div>
         </div>
 
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" id="btn-cancel-edit">Cancel</button>
-          <button type="submit" class="btn-primary">Save Changes</button>
+        <div class="sec-features-list">
+          <div class="sec-feature-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <div>
+              <strong>No Server, No Cloud Database:</strong>
+              Your transactions and income amounts are stored directly in your phone's browser storage. Absolutely nothing is uploaded to the internet or any server.
+            </div>
+          </div>
+
+          <div class="sec-feature-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <div>
+              <strong>Unhackable Remote Attack Surface:</strong>
+              Because no central database exists to be breached, hackers have zero access to your numbers.
+            </div>
+          </div>
+
+          <div class="sec-feature-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <div>
+              <strong>Optional Master PIN Lock:</strong>
+              Protect your screen from curious eyes when handing your phone to someone.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- App Configuration Settings -->
+      <section class="settings-card">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Preferences
+        </h3>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Currency Symbol</h4>
+            <p>Select your preferred currency display</p>
+          </div>
+          <select class="custom-select" id="currency-select">
+            <option value="INR|₹" selected>₹ Indian Rupee (INR)</option>
+            <option value="USD|$">$ US Dollar (USD)</option>
+            <option value="EUR|€">€ Euro (EUR)</option>
+            <option value="GBP|£">£ British Pound (GBP)</option>
+            <option value="AED|AED">AED UAE Dirham</option>
+            <option value="CAD|C$">C$ Canadian Dollar</option>
+            <option value="AUD|A$">A$ Australian Dollar</option>
+            <option value="JPY|¥">¥ Japanese Yen</option>
+            <option value="SGD|S$">S$ Singapore Dollar</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Security PIN Protection</h4>
+            <p>Require a 4-digit PIN every time app opens</p>
+          </div>
+          <button class="btn-secondary" id="btn-toggle-pin">Set PIN</button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Download Android App</h4>
+            <p>Install to Android home screen for offline access</p>
+          </div>
+          <button class="btn-secondary" id="btn-guide-install">Install Guide</button>
+        </div>
+      </section>
+
+      <!-- Backup, Export & Restore -->
+      <section class="settings-card">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Data Ownership &amp; Backup
+        </h3>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Export Backup File</h4>
+            <p>Save all transactions &amp; limits to a private JSON file</p>
+          </div>
+          <button class="btn-secondary" id="btn-export-backup">Export JSON</button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Restore from Backup</h4>
+            <p>Load previous data from your backup file</p>
+          </div>
+          <div>
+            <input type="file" id="import-file-input" accept=".json" style="display:none;">
+            <button class="btn-secondary" id="btn-trigger-import">Import JSON</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Wipe All Data</h4>
+            <p>Permanently remove all records stored on this phone</p>
+          </div>
+          <button class="btn-danger" id="btn-wipe-data">Clear All</button>
+        </div>
+      </section>
+    </main>
+
+  </div> <!-- End .app-wrapper -->
+
+  <!-- ==========================================================================
+       MOBILE BOTTOM NAVIGATION BAR
+       ========================================================================== -->
+  <nav class="bottom-nav">
+    <button class="bottom-nav-item active" data-target="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      <span>Overview</span>
+    </button>
+    <button class="bottom-nav-item" data-target="transactions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+      <span>Ledger</span>
+    </button>
+    
+    <!-- Central Floating Action Button -->
+    <button class="bottom-nav-item center-fab" id="btn-fab-add" title="Add Transaction">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    </button>
+
+    <button class="bottom-nav-item" data-target="budgets">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      <span>Limits</span>
+    </button>
+    <button class="bottom-nav-item" data-target="security">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      <span>Vault</span>
+    </button>
+  </nav>
+
+  <!-- ==========================================================================
+       MODAL: ADD / EDIT TRANSACTION
+       ========================================================================== -->
+  <div class="modal-overlay" id="modal-transaction">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 id="modal-tx-heading">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Record Transaction
+        </h3>
+        <button class="btn-modal-close" data-close-modal>&times;</button>
+      </div>
+
+      <form id="tx-form">
+        <input type="hidden" id="tx-id-input">
+        <div class="modal-body">
+
+          <!-- Type Selector: Expense vs Income -->
+          <div class="segmented-control">
+            <button type="button" class="segmented-btn active expense" id="type-btn-expense">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              Expense
+            </button>
+            <button type="button" class="segmented-btn income" id="type-btn-income">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+              Income
+            </button>
+          </div>
+
+          <!-- Amount Input -->
+          <div class="form-group">
+            <label class="form-label" for="tx-amount">Amount</label>
+            <div class="amount-input-box">
+              <span class="input-currency-tag" id="tx-currency-label">₹</span>
+              <input type="number" step="any" min="0.01" class="amount-field" id="tx-amount" placeholder="0.00" required autofocus>
+            </div>
+          </div>
+
+          <!-- Category Grid Picker -->
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <div class="category-picker-grid" id="modal-category-picker">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Live Budget Warning Alert (Shows if expense will breach limit) -->
+          <div class="modal-budget-warning" id="modal-budget-warning">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <div id="modal-budget-warning-text"></div>
+          </div>
+
+          <!-- Optional Description -->
+          <div class="form-group">
+            <label class="form-label" for="tx-description">Description / Note (Optional)</label>
+            <input type="text" class="form-input" id="tx-description" placeholder="e.g. Dinner with friends, Monthly groceries">
+          </div>
+
+          <!-- Date Selector -->
+          <div class="form-group">
+            <label class="form-label" for="tx-date">Date</label>
+            <input type="date" class="form-input" id="tx-date" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="btn-primary" id="btn-save-tx">Save Transaction</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Mobile Setup & Deployment Guide Modal -->
-  <div class="modal-overlay hidden" id="info-modal-overlay">
-    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="info-modal-title">
+  <!-- ==========================================================================
+       MODAL: SET / EDIT CATEGORY BUDGET LIMIT
+       ========================================================================== -->
+  <div class="modal-overlay" id="modal-category-limit">
+    <div class="modal-window">
       <div class="modal-header">
-        <h3 id="info-modal-title">📱 Android Phone Setup &amp; Deployment</h3>
-        <button class="modal-close-btn" id="info-modal-close-btn" aria-label="Close dialog">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+          Set Category Budget Limit
+        </h3>
+        <button class="btn-modal-close" data-close-modal>&times;</button>
       </div>
-      <div class="modal-body">
-        <div class="security-banner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          </svg>
-          <div>
-            <strong>100% Safe &amp; Private</strong>
-            <p>Your tasks are stored only on your own device's internal storage. There is no external database or server tracking you.</p>
+
+      <form id="limit-form">
+        <input type="hidden" id="limit-category-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <div id="limit-cat-display" style="font-weight:700; font-size:1.05rem; display:flex; align-items:center; gap:8px;"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="limit-amount-input">Monthly Spending Limit</label>
+            <div class="amount-input-box">
+              <span class="input-currency-tag" id="limit-currency-label">₹</span>
+              <input type="number" step="any" min="0" class="amount-field" id="limit-amount-input" placeholder="0.00" required>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:4px;">
+              Enter 0 to remove the spending limit for this category.
+            </p>
           </div>
         </div>
 
-        <div class="deploy-steps">
-          <h4>How to use this on your Android Phone:</h4>
-          
-          <div class="step-card">
-            <span class="step-num">1</span>
-            <div>
-              <strong>Option A: Netlify Drop (Easiest — 30 seconds)</strong>
-              <p>Go to <a href="https://app.netlify.com/drop" target="_blank" rel="noopener">app.netlify.com/drop</a> in your browser and drag &amp; drop this project folder. It gives you a free, permanent, secure <code>https://...</code> URL instantly!</p>
-            </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="btn-primary">Save Limit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: ADD CUSTOM CATEGORY
+       ========================================================================== -->
+  <div class="modal-overlay" id="modal-new-cat">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>Create New Category</h3>
+        <button class="btn-modal-close" data-close-modal>&times;</button>
+      </div>
+
+      <form id="new-cat-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="new-cat-name">Category Name</label>
+            <input type="text" class="form-input" id="new-cat-name" placeholder="e.g. Gym & Fitness, Coffee, Pet" required>
           </div>
 
-          <div class="step-card">
-            <span class="step-num">2</span>
-            <div>
-              <strong>Option B: GitHub Pages (Free forever)</strong>
-              <p>Push this folder to a GitHub repository, go to Settings &gt; Pages, and turn on GitHub Pages. You get a secure <code>https://yourname.github.io/todo</code> link.</p>
-            </div>
+          <div class="form-group">
+            <label class="form-label">Type</label>
+            <select class="custom-select" id="new-cat-type" style="width:100%;">
+              <option value="expense">Expense Category</option>
+              <option value="income">Income Category</option>
+            </select>
           </div>
 
-          <div class="step-card">
-            <span class="step-num">3</span>
-            <div>
-              <strong>Install as an App on Android:</strong>
-              <p>Open the link in Chrome on your phone, tap the <strong>three dots (⋮)</strong> at the top right, and choose <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>. It will open like a native app without browser bars!</p>
-            </div>
+          <div class="form-group">
+            <label class="form-label" for="new-cat-emoji">Emoji Icon</label>
+            <input type="text" class="form-input" id="new-cat-emoji" maxlength="2" value="🏷️" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="new-cat-limit">Monthly Limit (Optional)</label>
+            <input type="number" step="any" min="0" class="form-input" id="new-cat-limit" placeholder="Leave empty for no limit">
           </div>
         </div>
 
-        <div class="modal-actions">
-          <button type="button" class="btn-primary" id="btn-close-info">Got It!</button>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="btn-primary">Create Category</button>
         </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: ANDROID PWA INSTALLATION GUIDE
+       ========================================================================== -->
+  <div class="modal-overlay" id="modal-install-guide">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+          Install on Android Phone
+        </h3>
+        <button class="btn-modal-close" data-close-modal>&times;</button>
+      </div>
+
+      <div class="modal-body" style="font-size:0.9rem; line-height:1.6;">
+        <p><strong>To install VaultBudget on your Android phone as a standalone app:</strong></p>
+        
+        <ol style="padding-left:20px; display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+          <li>Open your deployed GitHub Pages link in <strong>Google Chrome</strong> on your Android phone.</li>
+          <li>Tap the three vertical dots (<strong>&vellip;</strong>) in Chrome's top-right corner.</li>
+          <li>Tap <strong>"Install app"</strong> (or <strong>"Add to Home screen"</strong>).</li>
+          <li>Confirm by tapping <strong>Install</strong>.</li>
+        </ol>
+
+        <div style="background:var(--surface-input); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border-subtle); margin-top:8px; font-size:0.82rem; color:#a7f3d0;">
+          &#10004; The app will be placed directly in your Android App Drawer.<br>
+          &#10004; Works 100% offline with zero data consumption.<br>
+          &#10004; No Google Play Store account required.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-primary" data-close-modal>Got It</button>
       </div>
     </div>
   </div>
 
-  <!-- Backup & Restore Modal -->
-  <div class="modal-overlay hidden" id="backup-modal-overlay">
-    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="backup-modal-title">
-      <div class="modal-header">
-        <h3 id="backup-modal-title">Backup & Restore</h3>
-        <button class="modal-close-btn" id="backup-modal-close-btn" aria-label="Close dialog">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
+  <!-- ==========================================================================
+       PIN LOCK SCREEN OVERLAY
+       ========================================================================== -->
+  <div class="pin-lock-overlay" id="pin-lock-screen">
+    <div class="pin-lock-box">
+      <div class="lock-avatar-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
       </div>
-      <div class="modal-body backup-options">
-        <p class="backup-note">Export your tasks to a JSON file to transfer between your laptop and phone, or restore anytime.</p>
-        
-        <div class="backup-action-card">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          </div>
-          <div class="card-info">
-            <h4>Export Backup</h4>
-            <p>Download your current tasks as a JSON file.</p>
-          </div>
-          <button class="btn-secondary" id="btn-export-json">Export</button>
-        </div>
+      <h2 id="pin-screen-title" style="font-size:1.3rem; font-weight:800; margin-bottom:4px;">Vault Locked</h2>
+      <p id="pin-screen-subtitle" style="font-size:0.82rem; color:var(--text-secondary);">Enter your 4-digit PIN to access records</p>
 
-        <div class="backup-action-card">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          </div>
-          <div class="card-info">
-            <h4>Import Backup</h4>
-            <p>Load tasks from a previously saved JSON file.</p>
-          </div>
-          <label class="btn-secondary btn-file-label">
-            Import
-            <input type="file" id="import-file-input" accept=".json" class="hidden">
-          </label>
-        </div>
+      <div class="pin-dots-row">
+        <div class="pin-dot" id="pindot-0"></div>
+        <div class="pin-dot" id="pindot-1"></div>
+        <div class="pin-dot" id="pindot-2"></div>
+        <div class="pin-dot" id="pindot-3"></div>
+      </div>
 
-        <div class="danger-zone">
-          <h4>Clear All Data</h4>
-          <p>Permanently remove all tasks and reset to zero.</p>
-          <div class="danger-actions">
-            <button class="btn-danger-solid" id="btn-reset-all">Wipe All Tasks</button>
-          </div>
-        </div>
+      <div class="pin-keypad">
+        <button type="button" class="keypad-btn" data-key="1">1</button>
+        <button type="button" class="keypad-btn" data-key="2">2</button>
+        <button type="button" class="keypad-btn" data-key="3">3</button>
+        <button type="button" class="keypad-btn" data-key="4">4</button>
+        <button type="button" class="keypad-btn" data-key="5">5</button>
+        <button type="button" class="keypad-btn" data-key="6">6</button>
+        <button type="button" class="keypad-btn" data-key="7">7</button>
+        <button type="button" class="keypad-btn" data-key="8">8</button>
+        <button type="button" class="keypad-btn" data-key="9">9</button>
+        <button type="button" class="keypad-btn" data-key="clear" style="font-size:0.9rem;">C</button>
+        <button type="button" class="keypad-btn" data-key="0">0</button>
+        <button type="button" class="keypad-btn" data-key="backspace">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Toast Notification Container -->
-  <div id="toast-container" class="toast-container" aria-live="assertive"></div>
+  <div class="toast-container" id="toast-container"></div>
 
-  <!-- Scripts -->
+  <!-- Main JavaScript File -->
   <script src="js/app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js').catch(function(err) {
-          console.log('ServiceWorker registration error:', err);
-        });
-      });
-    }
-  </script>
 </body>
 </html>
