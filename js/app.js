@@ -7,21 +7,21 @@
   'use strict';
 
   // ==========================================================================
-  // Default Configuration & Preset Categories
+  // Default Configuration & Preset Categories (All Limits Null by Default)
   // ==========================================================================
-  const STORAGE_KEY = 'vaultbudget_data_v1';
+  const STORAGE_KEY = 'vaultbudget_data_v2';
   const PIN_KEY = 'vaultbudget_security_pin_v1';
 
   const DEFAULT_CATEGORIES = [
-    // Expense Categories
-    { id: 'cat-food', name: 'Food & Dining', type: 'expense', icon: '🍔', color: '#f97316', limit: 6000 },
-    { id: 'cat-groceries', name: 'Groceries', type: 'expense', icon: '🛒', color: '#10b981', limit: 4000 },
-    { id: 'cat-housing', name: 'Housing & Rent', type: 'expense', icon: '🏠', color: '#6366f1', limit: 12000 },
-    { id: 'cat-transport', name: 'Transport & Fuel', type: 'expense', icon: '🚗', color: '#06b6d4', limit: 3000 },
-    { id: 'cat-shopping', name: 'Shopping & Clothes', type: 'expense', icon: '🛍️', color: '#ec4899', limit: 2500 },
-    { id: 'cat-entertainment', name: 'Entertainment', type: 'expense', icon: '🎬', color: '#8b5cf6', limit: 1500 },
-    { id: 'cat-utilities', name: 'Bills & Utilities', type: 'expense', icon: '💡', color: '#eab308', limit: 2000 },
-    { id: 'cat-health', name: 'Healthcare & Meds', type: 'expense', icon: '💊', color: '#14b8a6', limit: 2000 },
+    // Expense Categories (All limits start at null — user sets them)
+    { id: 'cat-food', name: 'Food & Dining', type: 'expense', icon: '🍔', color: '#f97316', limit: null },
+    { id: 'cat-groceries', name: 'Groceries', type: 'expense', icon: '🛒', color: '#10b981', limit: null },
+    { id: 'cat-housing', name: 'Housing & Rent', type: 'expense', icon: '🏠', color: '#6366f1', limit: null },
+    { id: 'cat-transport', name: 'Transport & Fuel', type: 'expense', icon: '🚗', color: '#06b6d4', limit: null },
+    { id: 'cat-shopping', name: 'Shopping & Clothes', type: 'expense', icon: '🛍️', color: '#ec4899', limit: null },
+    { id: 'cat-entertainment', name: 'Entertainment', type: 'expense', icon: '🎬', color: '#8b5cf6', limit: null },
+    { id: 'cat-utilities', name: 'Bills & Utilities', type: 'expense', icon: '💡', color: '#eab308', limit: null },
+    { id: 'cat-health', name: 'Healthcare & Meds', type: 'expense', icon: '💊', color: '#14b8a6', limit: null },
     { id: 'cat-other-exp', name: 'Other Expenses', type: 'expense', icon: '📦', color: '#64748b', limit: null },
 
     // Income Categories
@@ -32,11 +32,11 @@
     { id: 'cat-other-inc', name: 'Other Income', type: 'income', icon: '💵', color: '#06b6d4', limit: null }
   ];
 
-  // Application State
+  // Application State — 100% Clean: 0 Transactions, 0 Limits
   let state = {
     currency: { symbol: '₹', code: 'INR' },
     transactions: [],
-    categories: [...DEFAULT_CATEGORIES],
+    categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
     currentFilter: 'all',
     searchTerm: '',
     currentView: 'dashboard'
@@ -64,15 +64,19 @@
   // ==========================================================================
   function loadState() {
     try {
+      // Purge any legacy sample data if present in localStorage
+      localStorage.removeItem('vaultbudget_data_v1');
+
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed.transactions) state.transactions = parsed.transactions;
-        if (parsed.categories && parsed.categories.length) state.categories = parsed.categories;
+        if (Array.isArray(parsed.transactions)) state.transactions = parsed.transactions;
+        if (Array.isArray(parsed.categories) && parsed.categories.length) state.categories = parsed.categories;
         if (parsed.currency) state.currency = parsed.currency;
       } else {
-        // First run demo transaction so the user immediately sees the beautiful UI
-        initSampleData();
+        // Completely clean start: 0 transactions, 0 limits
+        state.transactions = [];
+        state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
         saveState();
       }
 
@@ -100,39 +104,6 @@
       console.error('Error writing to localStorage:', e);
       showToast('Warning: Storage full or disabled', 'error');
     }
-  }
-
-  function initSampleData() {
-    const today = new Date().toISOString().split('T')[0];
-    state.transactions = [
-      {
-        id: 'tx_sample_1',
-        type: 'income',
-        amount: 45000,
-        categoryId: 'cat-salary',
-        description: 'Monthly Salary Credit',
-        date: today,
-        createdAt: Date.now() - 86400000 * 2
-      },
-      {
-        id: 'tx_sample_2',
-        type: 'expense',
-        amount: 3200,
-        categoryId: 'cat-food',
-        description: 'Weekend dinner with family',
-        date: today,
-        createdAt: Date.now() - 86400000
-      },
-      {
-        id: 'tx_sample_3',
-        type: 'expense',
-        amount: 2150,
-        categoryId: 'cat-groceries',
-        description: 'Weekly grocery basket',
-        date: today,
-        createdAt: Date.now()
-      }
-    ];
   }
 
   // ==========================================================================
@@ -363,7 +334,15 @@
           </div>
         `;
       } else {
-        dashboardContainer.innerHTML = sortedForDashboard.map((cat) => {
+        const hasAnyLimit = expenseCategories.some((c) => Number(c.limit) > 0);
+        const starterNotice = !hasAnyLimit ? `
+          <div style="grid-column: 1 / -1; background: var(--surface-card); border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); padding: 12px 16px; font-size: 0.82rem; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px;">
+            <span>💡 All limits start at 0. Tap <strong>+ Set Limit</strong> on any category to set a budget.</span>
+            <button type="button" class="link-btn" id="btn-banner-goto-limits" style="white-space: nowrap;">Manage All &rarr;</button>
+          </div>
+        ` : '';
+
+        dashboardContainer.innerHTML = starterNotice + sortedForDashboard.map((cat) => {
           const spent = spentMap[cat.id] || 0;
           const limit = Number(cat.limit) || 0;
           const hasLimit = limit > 0;
@@ -380,7 +359,7 @@
                   <span>${escapeHtml(cat.name)}</span>
                 </div>
                 <span class="budget-percent-badge ${statusClass}">
-                  ${hasLimit ? (spent > limit ? 'Over Budget' : `${percent}%`) : 'No limit'}
+                  ${hasLimit ? (spent > limit ? 'Over Budget' : `${percent}%`) : 'Not set'}
                 </span>
               </div>
               <div class="progress-track">
@@ -390,9 +369,19 @@
                 <span>Spent: <strong>${formatMoney(spent)}</strong></span>
                 <span>Limit: <strong>${hasLimit ? formatMoney(limit) : 'None'}</strong></span>
               </div>
+              <div class="budget-card-footer">
+                <span class="budget-remaining">
+                  ${hasLimit ? `${formatMoney(Math.max(0, limit - spent))} left` : 'No limit set'}
+                </span>
+                <button type="button" class="btn-edit-limit" data-action="edit-limit" data-cat-id="${cat.id}">
+                  ${hasLimit ? 'Edit Limit' : '+ Set Limit'}
+                </button>
+              </div>
             </div>
           `;
         }).join('');
+
+        document.getElementById('btn-banner-goto-limits')?.addEventListener('click', () => switchView('budgets'));
       }
     }
   }
