@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Zenith — Modern Task & To-Do Flow</title>
+  
+  <!-- Mobile & PWA meta tags -->
+  <meta name="theme-color" content="#0a0e17">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Zenith Tasks">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Ambient Background Orbs -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Main Canvas for Confetti -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="app-layout">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>Zenith<span>Tasks</span></h1>
+          <p class="greeting" id="greeting-text">Your personal task space</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Live Date badge -->
+        <div class="date-badge" id="current-date-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span id="date-display">Today</span>
+        </div>
+
+        <!-- Sound Feedback Toggle -->
+        <button class="icon-btn" id="sound-toggle-btn" title="Toggle Sound (Enabled)" aria-label="Toggle Sound">
+          <svg id="sound-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="sound-icon-off" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <!-- Theme Mode Switcher -->
+        <button class="icon-btn" id="theme-toggle-btn" title="Switch Theme (Dark / Light)" aria-label="Toggle Theme">
+          <svg id="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg id="moon-icon" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <!-- Deploy & Info modal trigger -->
+        <button class="icon-btn" id="info-btn" title="Phone Setup & Deployment Guide" aria-label="Phone Setup Guide">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+          </svg>
+        </button>
+
+        <!-- Settings / Backup modal trigger -->
+        <button class="icon-btn" id="backup-btn" title="Backup / Restore Tasks" aria-label="Backup and Restore">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Productivity Metric / Progress Banner -->
+    <section class="stats-card">
+      <div class="stats-info">
+        <div class="stats-text">
+          <span class="stats-label">Daily Progress</span>
+          <h2 class="stats-title" id="stats-status-text">Your list is clean and ready!</h2>
+          <p class="stats-subtitle" id="stats-numbers"><span id="completed-count">0</span> of <span id="total-count">0</span> tasks completed</p>
+        </div>
+        <div class="stats-chart">
+          <div class="circle-progress">
+            <svg viewBox="0 0 100 100">
+              <circle class="circle-bg" cx="50" cy="50" r="42"></circle>
+              <circle class="circle-bar" id="progress-circle-bar" cx="50" cy="50" r="42"></circle>
+            </svg>
+            <div class="circle-value" id="progress-percent">0%</div>
+          </div>
+        </div>
+      </div>
+      <!-- Mini Quick Counters -->
+      <div class="metrics-row">
+        <div class="metric-pill" data-tab-target="all">
+          <span class="metric-num" id="badge-all">0</span>
+          <span class="metric-desc">Total</span>
+        </div>
+        <div class="metric-pill" data-tab-target="active">
+          <span class="metric-num warning" id="badge-pending">0</span>
+          <span class="metric-desc">Active</span>
+        </div>
+        <div class="metric-pill" data-tab-target="completed">
+          <span class="metric-num success" id="badge-done">0</span>
+          <span class="metric-desc">Completed</span>
+        </div>
+        <div class="metric-pill" id="badge-high-priority">
+          <span class="metric-num danger" id="badge-urgent">0</span>
+          <span class="metric-desc">Urgent</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Task Creation Section -->
+    <section class="task-input-section">
+      <form id="new-task-form" class="task-card-input">
+        <div class="input-main-row">
+          <div class="checkbox-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"></circle>
+            </svg>
+          </div>
+          <input 
+            type="text" 
+            id="task-title-input" 
+            placeholder="Add a new task (e.g. Study chapter 4, buy groceries...)" 
+            autocomplete="off"
+            required
+          />
+          <button type="button" class="btn-expand-details" id="toggle-details-btn" title="Optional: Add notes, priority, date, or category">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Options</span>
+          </button>
+          <button type="submit" class="btn-primary" id="btn-submit-task">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Add</span>
+          </button>
+        </div>
+
+        <!-- Expanded Details Drawer -->
+        <div class="details-drawer collapsed" id="task-details-drawer">
+          <div class="details-grid">
+            <!-- Optional Note -->
+            <div class="drawer-field full-width">
+              <textarea id="task-desc-input" placeholder="Add optional details, steps, or notes..." rows="2"></textarea>
+            </div>
+
+            <!-- Priority -->
+            <div class="drawer-field">
+              <label for="task-priority-select">Priority</label>
+              <div class="custom-select-wrap">
+                <select id="task-priority-select">
+                  <option value="low">🌱 Low</option>
+                  <option value="medium" selected>⚡ Medium</option>
+                  <option value="high">🔥 High</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Category -->
+            <div class="drawer-field">
+              <label for="task-category-select">Category</label>
+              <div class="custom-select-wrap">
+                <select id="task-category-select">
+                  <option value="College" selected>🎓 College & Study</option>
+                  <option value="Work">💼 Work</option>
+                  <option value="Personal">🌟 Personal</option>
+                  <option value="Health">💪 Health</option>
+                  <option value="Finance">💰 Finance</option>
+                  <option value="Other">📌 General</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Due Date -->
+            <div class="drawer-field">
+              <label for="task-due-date">Due Date (Optional)</label>
+              <input type="date" id="task-due-date">
+            </div>
+
+            <!-- Due Time -->
+            <div class="drawer-field">
+              <label for="task-due-time">Due Time (Optional)</label>
+              <input type="time" id="task-due-time">
+            </div>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Toolbar: Search, Filters & Sort -->
+    <section class="controls-toolbar">
+      <!-- Search Input -->
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-input" placeholder="Search tasks..." autocomplete="off">
+        <button class="clear-search-btn hidden" id="clear-search-btn" title="Clear Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Filter Tabs: All, Active, Completed -->
+      <div class="filter-tabs" role="tablist">
+        <button class="filter-tab active" data-tab="all" role="tab">All Tasks</button>
+        <button class="filter-tab" data-tab="active" role="tab">Active</button>
+        <button class="filter-tab" data-tab="completed" role="tab">Completed</button>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="category-filter-wrap">
+        <label class="sr-only" for="category-filter-select">Filter by Category</label>
+        <select id="category-filter-select" class="dropdown-filter">
+          <option value="all">All Categories</option>
+          <option value="College">🎓 College</option>
+          <option value="Work">💼 Work</option>
+          <option value="Personal">🌟 Personal</option>
+          <option value="Health">💪 Health</option>
+          <option value="Finance">💰 Finance</option>
+          <option value="Other">📌 General</option>
+        </select>
+      </div>
+
+      <!-- Sort Options -->
+      <div class="sort-wrap">
+        <label class="sr-only" for="sort-select">Sort Tasks</label>
+        <select id="sort-select" class="dropdown-filter">
+          <option value="newest">🕒 Newest First</option>
+          <option value="oldest">⏳ Oldest First</option>
+          <option value="due-date">📅 Due Date</option>
+          <option value="priority-desc">🔥 Highest Priority</option>
+          <option value="priority-asc">🌱 Lowest Priority</option>
+          <option value="alpha">🔤 Alphabetical (A-Z)</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Tasks Main Display with Distinct Separate Sections -->
+    <main class="tasks-container">
+
+      <!-- SECTION 1: Active Tasks -->
+      <div class="tasks-group" id="active-tasks-group">
+        <div class="group-header">
+          <div class="group-title-wrap">
+            <span class="group-dot active-dot"></span>
+            <h3>Active Tasks</h3>
+            <span class="section-count-badge" id="active-tasks-count">0</span>
+          </div>
+        </div>
+        <div class="task-list" id="active-task-list" aria-live="polite">
+          <!-- Active tasks rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- SECTION 2: Completed Tasks -->
+      <div class="tasks-group" id="completed-tasks-group">
+        <div class="group-header">
+          <div class="group-title-wrap">
+            <span class="group-dot completed-dot"></span>
+            <h3>Completed Tasks</h3>
+            <span class="section-count-badge" id="completed-tasks-count">0</span>
+          </div>
+          <button class="text-action-btn danger hidden" id="btn-clear-completed" title="Delete all completed tasks">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            Clear Completed
+          </button>
+        </div>
+        <div class="task-list" id="completed-task-list" aria-live="polite">
+          <!-- Completed tasks rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Empty State View (When no tasks exist in current view) -->
+      <div class="empty-state hidden" id="empty-state">
+        <div class="empty-illustration">
+          <div class="empty-icon-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+        </div>
+        <h3 id="empty-state-title">No tasks here</h3>
+        <p id="empty-state-desc">Your list is completely clear. Type your first task in the box above to get started!</p>
+        <button class="btn-primary-ghost" id="empty-add-btn">Add Your First Task</button>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="shortcuts-hint">
+        <span><kbd>Enter</kbd> to add</span>
+        <span><kbd>/</kbd> to search</span>
+        <span><kbd>Esc</kbd> to close</span>
+        <span>Safe &amp; 100% Private</span>
+      </div>
+      <div class="footer-credit">
+        Ready for Android &amp; Mobile Web
+      </div>
+    </footer>
+  </div>
+
+  <!-- Edit Task Modal -->
+  <div class="modal-overlay hidden" id="edit-modal-overlay">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <h3 id="modal-title">Edit Task</h3>
+        <button class="modal-close-btn" id="modal-close-btn" aria-label="Close dialog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <form id="edit-task-form" class="modal-body">
+        <input type="hidden" id="edit-task-id">
+
+        <div class="form-group">
+          <label for="edit-title">Task Title</label>
+          <input type="text" id="edit-title" required autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="edit-desc">Description / Notes</label>
+          <textarea id="edit-desc" rows="3" placeholder="Additional details or steps..."></textarea>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="edit-priority">Priority</label>
+            <select id="edit-priority">
+              <option value="low">🌱 Low</option>
+              <option value="medium">⚡ Medium</option>
+              <option value="high">🔥 High</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-category">Category</label>
+            <select id="edit-category">
+              <option value="College">🎓 College & Study</option>
+              <option value="Work">💼 Work</option>
+              <option value="Personal">🌟 Personal</option>
+              <option value="Health">💪 Health</option>
+              <option value="Finance">💰 Finance</option>
+              <option value="Other">📌 General</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="edit-due-date">Due Date</label>
+            <input type="date" id="edit-due-date">
+          </div>
+          <div class="form-group">
+            <label for="edit-due-time">Due Time</label>
+            <input type="time" id="edit-due-time">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="btn-cancel-edit">Cancel</button>
+          <button type="submit" class="btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Mobile Setup & Deployment Guide Modal -->
+  <div class="modal-overlay hidden" id="info-modal-overlay">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="info-modal-title">
+      <div class="modal-header">
+        <h3 id="info-modal-title">📱 Android Phone Setup &amp; Deployment</h3>
+        <button class="modal-close-btn" id="info-modal-close-btn" aria-label="Close dialog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="security-banner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+          <div>
+            <strong>100% Safe &amp; Private</strong>
+            <p>Your tasks are stored only on your own device's internal storage. There is no external database or server tracking you.</p>
+          </div>
+        </div>
+
+        <div class="deploy-steps">
+          <h4>How to use this on your Android Phone:</h4>
+          
+          <div class="step-card">
+            <span class="step-num">1</span>
+            <div>
+              <strong>Option A: Netlify Drop (Easiest — 30 seconds)</strong>
+              <p>Go to <a href="https://app.netlify.com/drop" target="_blank" rel="noopener">app.netlify.com/drop</a> in your browser and drag &amp; drop this project folder. It gives you a free, permanent, secure <code>https://...</code> URL instantly!</p>
+            </div>
+          </div>
+
+          <div class="step-card">
+            <span class="step-num">2</span>
+            <div>
+              <strong>Option B: GitHub Pages (Free forever)</strong>
+              <p>Push this folder to a GitHub repository, go to Settings &gt; Pages, and turn on GitHub Pages. You get a secure <code>https://yourname.github.io/todo</code> link.</p>
+            </div>
+          </div>
+
+          <div class="step-card">
+            <span class="step-num">3</span>
+            <div>
+              <strong>Install as an App on Android:</strong>
+              <p>Open the link in Chrome on your phone, tap the <strong>three dots (⋮)</strong> at the top right, and choose <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>. It will open like a native app without browser bars!</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-primary" id="btn-close-info">Got It!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backup & Restore Modal -->
+  <div class="modal-overlay hidden" id="backup-modal-overlay">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="backup-modal-title">
+      <div class="modal-header">
+        <h3 id="backup-modal-title">Backup & Restore</h3>
+        <button class="modal-close-btn" id="backup-modal-close-btn" aria-label="Close dialog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body backup-options">
+        <p class="backup-note">Export your tasks to a JSON file to transfer between your laptop and phone, or restore anytime.</p>
+        
+        <div class="backup-action-card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </div>
+          <div class="card-info">
+            <h4>Export Backup</h4>
+            <p>Download your current tasks as a JSON file.</p>
+          </div>
+          <button class="btn-secondary" id="btn-export-json">Export</button>
+        </div>
+
+        <div class="backup-action-card">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          </div>
+          <div class="card-info">
+            <h4>Import Backup</h4>
+            <p>Load tasks from a previously saved JSON file.</p>
+          </div>
+          <label class="btn-secondary btn-file-label">
+            Import
+            <input type="file" id="import-file-input" accept=".json" class="hidden">
+          </label>
+        </div>
+
+        <div class="danger-zone">
+          <h4>Clear All Data</h4>
+          <p>Permanently remove all tasks and reset to zero.</p>
+          <div class="danger-actions">
+            <button class="btn-danger-solid" id="btn-reset-all">Wipe All Tasks</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="assertive"></div>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js').catch(function(err) {
+          console.log('ServiceWorker registration error:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

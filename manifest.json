@@ -1,0 +1,18 @@
+{
+  "name": "Zenith Tasks",
+  "short_name": "Zenith",
+  "description": "Safe, private and fast to-do application",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0e17",
+  "theme_color": "#0a0e17",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
